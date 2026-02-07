@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 72% 51%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 72% 51%;
+
+    --radius: 0.25rem;
+
+    --netflix-red: 0 72% 51%;
+    --netflix-dark: 0 0% 5%;
+    --netflix-gray: 0 0% 20%;
+    --netflix-light-gray: 0 0% 60%;
+    --netflix-green: 120 60% 50%;
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 72% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 72% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  /* Hide scrollbar for content rows */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
