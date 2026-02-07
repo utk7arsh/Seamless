@@ -9,8 +9,17 @@ interface VideoViewerProps {
   onClose: () => void;
 }
 
+// Netflix glowing bar: red strip on the RIGHT edge of the video viewer.
+// To find it in this file, search for: "glowing bar" or "right-0" or "z-[95]".
+
+const time_of_ad = 60;
+const AD_DURATION_SEC = 10; // pretend ad plays for 10 seconds
+const RIGHT_EDGE_HOVER_PERCENT = 10; // sidebar opens when cursor within this % of viewport width from right edge (during ad)
 const SEEK_AMOUNT = 10;
 const CONTROLS_HIDE_DELAY = 3000;
+
+// NETFLIX GLOW BAR: The red glowing strip on the RIGHT edge of the video viewer
+// is rendered in the return() below — search for "glowing bar" or "right-0" or "z-[95]"
 
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -74,6 +83,35 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     }, CONTROLS_HIDE_DELAY);
   }, []);
 
+  const isAdZone = duration > 0 && currentTime >= time_of_ad && currentTime < time_of_ad + AD_DURATION_SEC;
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      resetControlsTimer();
+      if (isAdZone) {
+        const rightZonePx = window.innerWidth * (RIGHT_EDGE_HOVER_PERCENT / 100);
+        const nearRightEdge = e.clientX >= window.innerWidth - rightZonePx;
+        setSidebarOpen(nearRightEdge);
+      }
+    },
+    [resetControlsTimer, isAdZone]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    if (videoRef.current && !videoRef.current.paused) setShowControls(false);
+    if (isAdZone) setSidebarOpen(false);
+  }, [isAdZone]);
+
+  const wasAdZoneRef = useRef(false);
+  const isHoveringSidebarRef = useRef(false);
+  useEffect(() => {
+    if (wasAdZoneRef.current && !isAdZone) {
+      if (!isHoveringSidebarRef.current) setSidebarOpen(false);
+    }
+    wasAdZoneRef.current = isAdZone;
+  }, [isAdZone]);
+
+  // VIDEO EVENT LISTENERS
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -90,6 +128,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     };
   }, []);
 
+  // CLEANUP
   useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -97,6 +136,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     };
   }, []);
 
+  // KEYBOARD SHORTCUTS
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -124,11 +164,11 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
   return (
     <div
       className="fixed inset-0 z-[100] bg-black flex flex-col"
-      onMouseMove={resetControlsTimer}
-      onMouseLeave={() => {
-        if (videoRef.current && !videoRef.current.paused) setShowControls(false);
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
+      {/* Layout order: Video, then top bar (close), cart, GLOW BAR (right edge), center play, bottom bar, cart sidebar portal */}
+
       {/* Video */}
       <video
         ref={videoRef}
@@ -177,6 +217,23 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
         <ShoppingCart size={22} />
       </button>
 
+      {/* ========== NETFLIX-STYLE GLOWING BAR — RIGHT SIDE OF SCREEN ==========
+          FIND IT: search this file for "glowing bar" or "right-0" or "z-[95]"
+          Location: RIGHT SIDE of the video viewer, full height.
+          This is the red glow strip (like Google Gemini in Chrome).
+          Search for: "glowing bar" or "right-0" or "z-[95]" to find it.
+          Styling: Netflix red (#E50914), gradient + box-shadow glow. */}
+      {currentTime >= time_of_ad && currentTime < time_of_ad + AD_DURATION_SEC && duration > time_of_ad && (
+      <div
+        className="fixed right-0 top-0 bottom-0 w-[10px] pointer-events-none z-[95] animate-in fade-in duration-500"
+        style={{
+          background: "linear-gradient(to left,rgba(229,9,20,0.9) 0%,"+
+                          " rgba(229,9,20,0.35) 60%, transparent 100%)",
+          boxShadow: "-32px 0 160px rgba(229,9,20,0.7), -16px 0 96px rgba(229,9,20,0.6), -8px 0 48px rgba(229,9,20,0.5)",
+        }}
+        aria-hidden
+      />
+      )}
       {/* Center play/pause (big) when paused */}
       {!isPlaying && (
         <button
@@ -210,6 +267,18 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
             style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
             aria-hidden
           />
+          {/* Yellow blob: 10-second ad segment on timeline */}
+          {duration > 0 && time_of_ad < duration && (
+            <div
+              className="absolute top-1/2 h-1.5 rounded-sm bg-yellow-400/90 shadow-[0_0_6px_rgba(250,204,21,0.6)] pointer-events-none"
+              style={{
+                left: `${(time_of_ad / duration) * 100}%`,
+                width: `${Math.min((AD_DURATION_SEC / duration) * 100, ((duration - time_of_ad) / duration) * 100)}%`,
+                transform: "translateY(-50%)",
+              }}
+              aria-hidden
+            />
+          )}
           <input
             type="range"
             min={0}
@@ -270,17 +339,19 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
             <div
               role="presentation"
               className={`fixed inset-0 z-[200] bg-black/50 transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-              onClick={() => setSidebarOpen(false)}
+              onClick={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
             />
             <aside
               className={`fixed top-0 right-0 bottom-0 z-[210] w-full max-w-sm bg-neutral-900 border-l border-neutral-700 shadow-xl flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
               aria-hidden={!sidebarOpen}
+              onMouseEnter={() => { isHoveringSidebarRef.current = true; }}
+              onMouseLeave={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
             >
               <div className="flex items-center justify-between p-4 border-b border-neutral-700">
                 <h2 className="text-lg font-semibold text-white">Cart</h2>
                 <button
                   type="button"
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
                   className="p-2 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-700 transition-colors"
                   aria-label="Close cart"
                 >
@@ -301,7 +372,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
               <div className="p-4 border-t border-neutral-700">
                 <button
                   type="button"
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
                   className="w-full py-3 px-4 rounded-md bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors"
                 >
                   Checkout
