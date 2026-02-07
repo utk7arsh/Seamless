@@ -1,12 +1,14 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart } from "lucide-react";
+import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart, Loader2 } from "lucide-react";
 import { allContent } from "@/data/content";
 import sampleVideo from "@/assets/video/breaking_bad.mp4";
+import { toast } from "sonner";
 
 interface VideoViewerProps {
   contentId: string;
   onClose: () => void;
+  resumeTime?: number;
 }
 
 const SEEK_AMOUNT = 10;
@@ -19,7 +21,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
+const VideoViewer = ({ contentId, onClose, resumeTime }: VideoViewerProps) => {
   const content = allContent.find((c) => c.id === contentId);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,6 +31,8 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const video = videoRef.current;
 
@@ -63,6 +67,64 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     [video]
   );
 
+  const handleCheckout = useCallback(async () => {
+    const apiKey = import.meta.env.VITE_FLOWGLAD_API_KEY;
+    if (!apiKey || apiKey === "your_flowglad_api_key_here") {
+      const msg = "Flowglad API key is not configured. Add VITE_FLOWGLAD_API_KEY to frontend/.env.local";
+      setCheckoutError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const videoTime = videoRef.current?.currentTime ?? 0;
+      const baseUrl = window.location.origin + window.location.pathname;
+      const resumeUrl = `${baseUrl}?resumeVideo=${encodeURIComponent(contentId)}&t=${Math.floor(videoTime)}`;
+      const successResumeUrl = `${resumeUrl}&checkout=success`;
+
+      const res = await fetch("/api/flowglad/checkout-sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          checkoutSession: {
+            type: "product",
+            anonymous: true,
+            customerExternalId: null,
+            priceSlug: "papa_john_s_pizza",
+            successUrl: successResumeUrl,
+            cancelUrl: resumeUrl,
+            quantity: 1,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Checkout failed (${res.status}): ${body}`);
+      }
+
+      const data = await res.json();
+      const checkoutUrl = data?.checkoutSession?.url ?? data?.url;
+      if (!checkoutUrl) {
+        throw new Error("No checkout URL returned from Flowglad");
+      }
+
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Checkout failed";
+      setCheckoutError(msg);
+      toast.error(msg);
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }, []);
+
   const resetControlsTimer = useCallback(() => {
     setShowControls(true);
     if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -76,7 +138,14 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     const v = videoRef.current;
     if (!v) return;
     const onTimeUpdate = () => setCurrentTime(v.currentTime);
-    const onLoadedMetadata = () => setDuration(v.duration);
+    const onLoadedMetadata = () => {
+      setDuration(v.duration);
+      if (resumeTime != null && resumeTime > 0) {
+        v.currentTime = resumeTime;
+        v.play();
+        setIsPlaying(true);
+      }
+    };
     const onEnded = () => setIsPlaying(false);
     v.addEventListener("timeupdate", onTimeUpdate);
     v.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -151,6 +220,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
+          setCheckoutError(null);
           setSidebarOpen(true);
         }}
         className={`
@@ -266,23 +336,57 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 text-neutral-300 text-sm leading-relaxed">
-                <p className="mb-4">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-                </p>
-                <p className="mb-4">
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-                <p>
-                  Curabitur pretium tincidunt lacus. Nulla facilisi. Ut convallis, sem sit amet interdum consectetuer, odio augue aliquam leo, nec dapibus tortor nibh sed augue.
-                </p>
+                {/* Product card */}
+                <div className="rounded-lg border border-neutral-700 bg-neutral-800 p-4 mb-4">
+                  <div className="flex gap-3">
+                    <div className="w-16 h-16 rounded-md bg-neutral-700 flex items-center justify-center text-3xl flex-shrink-0">
+                      🍕
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white font-semibold text-base">Papa John's Pizza</h3>
+                      <p className="text-neutral-400 text-xs mt-0.5">Large Original Crust - Pepperoni</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-white font-bold text-lg">$12.99</span>
+                        <span className="text-neutral-400 text-xs">Qty: 1</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order summary */}
+                <div className="border-t border-neutral-700 pt-3 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Subtotal</span>
+                    <span className="text-white">$12.99</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Tax</span>
+                    <span className="text-neutral-400 text-xs">Calculated at checkout</span>
+                  </div>
+                  <div className="flex justify-between border-t border-neutral-700 pt-2 mt-2">
+                    <span className="text-white font-semibold">Total</span>
+                    <span className="text-white font-semibold">$12.99</span>
+                  </div>
+                </div>
               </div>
               <div className="p-4 border-t border-neutral-700">
+                {checkoutError && (
+                  <p className="text-red-400 text-xs mb-2 text-center">{checkoutError}</p>
+                )}
                 <button
                   type="button"
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-full py-3 px-4 rounded-md bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors"
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                  className="w-full py-3 px-4 rounded-md bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Checkout
+                  {checkoutLoading ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Checkout"
+                  )}
                 </button>
               </div>
             </aside>

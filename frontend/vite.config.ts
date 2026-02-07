@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api/flowglad": {
+        target: "https://app.flowglad.com",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/flowglad/, "/api/v1"),
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

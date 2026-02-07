@@ -5,11 +5,31 @@ import ContentRow from "@/components/ContentRow";
 import VideoViewer from "@/components/VideoViewer";
 import UserSwitchToast from "@/components/UserSwitchToast";
 import { contentRows, users } from "@/data/content";
+import { toast } from "sonner";
 
 const Index = () => {
   const [currentUser, setCurrentUser] = useState(1);
   const [videoId, setVideoId] = useState<string | null>(null);
+  const [resumeTime, setResumeTime] = useState<number | undefined>(undefined);
   const [showUserToast, setShowUserToast] = useState(false);
+
+  // Auto-open video if returning from checkout with resume params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resumeVideo = params.get("resumeVideo");
+    const t = params.get("t");
+    if (resumeVideo) {
+      setVideoId(resumeVideo);
+      setResumeTime(t ? Number(t) : undefined);
+      if (params.get("checkout") === "success") {
+        setTimeout(() => {
+          toast.success("Order completed! Enjoy your movie.", { duration: 4000 });
+        }, 500);
+      }
+      // Clean up URL without triggering a reload
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const switchUser = useCallback(() => {
     setCurrentUser((prev) => {
@@ -36,8 +56,14 @@ const Index = () => {
     }
   }, [showUserToast]);
 
-  const openVideo = (id: string) => setVideoId(id);
-  const closeVideo = () => setVideoId(null);
+  const openVideo = (id: string) => {
+    setResumeTime(undefined);
+    setVideoId(id);
+  };
+  const closeVideo = () => {
+    setResumeTime(undefined);
+    setVideoId(null);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +76,7 @@ const Index = () => {
         ))}
       </div>
 
-      {videoId && <VideoViewer contentId={videoId} onClose={closeVideo} />}
+      {videoId && <VideoViewer contentId={videoId} onClose={closeVideo} resumeTime={resumeTime} />}
       {showUserToast && <UserSwitchToast currentUser={currentUser} />}
     </div>
   );
