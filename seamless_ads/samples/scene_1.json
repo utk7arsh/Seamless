@@ -1,0 +1,10 @@
+{
+  "scene_id": "scene_pizza_001",
+  "timestamp_range": [842.2, 849.8],
+  "detected_objects": [
+    {"label": "pizza", "confidence": 0.94, "bbox": [0.18, 0.42, 0.36, 0.28]},
+    {"label": "table", "confidence": 0.88, "bbox": [0.05, 0.65, 0.9, 0.3]}
+  ],
+  "scene_tags": ["pizza", "party", "friends", "late_night"],
+  "dialogue_keywords": ["slice", "cheesy", "hungry"]
+}

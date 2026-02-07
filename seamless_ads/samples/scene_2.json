@@ -1,0 +1,10 @@
+{
+  "scene_id": "scene_beverage_002",
+  "timestamp_range": [120.0, 124.5],
+  "detected_objects": [
+    {"label": "soda", "confidence": 0.91, "bbox": [0.62, 0.38, 0.12, 0.25]},
+    {"label": "can", "confidence": 0.76, "bbox": [0.66, 0.4, 0.1, 0.22]}
+  ],
+  "scene_tags": ["beverage", "friends", "chill"],
+  "dialogue_keywords": ["drink", "refreshing"]
+}
