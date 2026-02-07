@@ -1,33 +1,25 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
 import VideoViewer from "@/components/VideoViewer";
 import UserSwitchToast from "@/components/UserSwitchToast";
+import UserSwitcher from "@/components/UserSwitcher";
 import { contentRows, users } from "@/data/content";
 
 const Index = () => {
-  const [currentUser, setCurrentUser] = useState(1);
+  const [currentUser, setCurrentUser] = useState<number | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [showUserToast, setShowUserToast] = useState(false);
+  const [isUserSwitcherOpen, setIsUserSwitcherOpen] = useState(true);
 
-  const switchUser = useCallback(() => {
-    setCurrentUser((prev) => {
-      const nextId = prev >= users.length ? 1 : prev + 1;
-      return nextId;
-    });
+  const activeUserId = currentUser ?? users[0].id;
+
+  const selectUser = (id: number) => {
+    setCurrentUser(id);
+    setIsUserSwitcherOpen(false);
     setShowUserToast(true);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "]") {
-        switchUser();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [switchUser]);
+  };
 
   useEffect(() => {
     if (showUserToast) {
@@ -41,7 +33,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar currentUser={currentUser} />
+      <Navbar currentUser={activeUserId} onOpenProfiles={() => setIsUserSwitcherOpen(true)} />
       <HeroBanner onPlay={openVideo} />
 
       <div className="-mt-24 relative z-10">
@@ -51,7 +43,13 @@ const Index = () => {
       </div>
 
       {videoId && <VideoViewer contentId={videoId} onClose={closeVideo} />}
-      {showUserToast && <UserSwitchToast currentUser={currentUser} />}
+      {showUserToast && <UserSwitchToast currentUser={activeUserId} />}
+      <UserSwitcher
+        currentUserId={currentUser}
+        isOpen={isUserSwitcherOpen}
+        onSelect={selectUser}
+        onClose={() => setIsUserSwitcherOpen(false)}
+      />
     </div>
   );
 };

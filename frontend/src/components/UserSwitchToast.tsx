@@ -13,7 +13,7 @@ const UserSwitchToast = ({ currentUser }: UserSwitchToastProps) => {
         className="w-8 h-8 rounded-sm flex items-center justify-center text-sm font-bold text-accent-foreground"
         style={{ backgroundColor: user.color }}
       >
-        {user.name.charAt(0)}
+        {user.key}
       </div>
       <span className="text-foreground text-sm font-medium">Switched to {user.name}</span>
     </div>
