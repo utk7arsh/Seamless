@@ -58,7 +58,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Netflix Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .font-display {
+    font-family: "Netflix Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
 
   /* Hide scrollbar for content rows */

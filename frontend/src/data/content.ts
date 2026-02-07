@@ -27,11 +27,38 @@ export interface ContentRow {
   items: ContentItem[];
 }
 
-export const users = [
-  { id: 1, name: "User 1", color: "hsl(0, 72%, 51%)" },
-  { id: 2, name: "User 2", color: "hsl(210, 72%, 51%)" },
-  { id: 3, name: "User 3", color: "hsl(120, 60%, 50%)" },
-  { id: 4, name: "User 4", color: "hsl(45, 90%, 55%)" },
+export interface AppUser {
+  id: number;
+  key: "A" | "B";
+  name: string;
+  color: string;
+  persona: string;
+  vibe: string;
+  focus: string;
+  tags: string[];
+}
+
+export const users: AppUser[] = [
+  {
+    id: 1,
+    key: "A",
+    name: "User A",
+    color: "hsl(356, 78%, 52%)",
+    persona: "Late-Night Snacker",
+    vibe: "Comfort-first, deal-aware, cozy watch sessions.",
+    focus: "Frozen pizza, cola, and quick delivery wins.",
+    tags: ["Late Night", "Deal-Seeker", "Comfort Food"],
+  },
+  {
+    id: 2,
+    key: "B",
+    name: "User B",
+    color: "hsl(205, 88%, 55%)",
+    persona: "Wellness Optimizer",
+    vibe: "Balanced choices, clean ingredients, mindful habits.",
+    focus: "Sparkling beverages, protein-forward snacks.",
+    tags: ["Balanced", "Premium", "Pickup-Friendly"],
+  },
 ];
 
 const allContent: ContentItem[] = [

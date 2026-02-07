@@ -3,9 +3,10 @@ import { users } from "@/data/content";
 
 interface NavbarProps {
   currentUser: number;
+  onOpenProfiles: () => void;
 }
 
-const Navbar = ({ currentUser }: NavbarProps) => {
+const Navbar = ({ currentUser, onOpenProfiles }: NavbarProps) => {
   const user = users.find((u) => u.id === currentUser) || users[0];
 
   return (
@@ -34,12 +35,23 @@ const Navbar = ({ currentUser }: NavbarProps) => {
             3
           </span>
         </button>
-        <div
-          className="w-8 h-8 rounded-sm flex items-center justify-center text-xs font-bold text-accent-foreground"
-          style={{ backgroundColor: user.color }}
+        <button
+          type="button"
+          onClick={onOpenProfiles}
+          className="group flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-2 py-1 transition hover:border-white/30"
+          aria-label="Switch profile"
         >
-          {user.name.charAt(0)}
-        </div>
+          <div
+            className="w-8 h-8 rounded-sm flex items-center justify-center text-xs font-bold text-accent-foreground"
+            style={{ backgroundColor: user.color }}
+          >
+            {user.key}
+          </div>
+          <div className="hidden flex-col items-start text-left sm:flex">
+            <span className="text-xs uppercase tracking-[0.2em] text-foreground/60">{user.persona}</span>
+            <span className="text-sm font-semibold text-foreground">{user.name}</span>
+          </div>
+        </button>
       </div>
     </nav>
   );

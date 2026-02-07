@@ -1,12 +1,13 @@
 """CLI entrypoint for Seamless ads."""
 
+import argparse
 import json
-import sys
 from pathlib import Path
 
 from .metadata import GetMetadata
 from .schemas import UserProfile
 from .service import SeamlessAdService
+from .user_profiles import USER_PERSONAS, get_user_profile
 
 
 def _load_json(path: str) -> dict:
@@ -14,23 +15,28 @@ def _load_json(path: str) -> dict:
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python -m seamless_ads <scene_json> <user_json>", file=sys.stderr)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Generate Seamless ad recommendations.")
+    parser.add_argument("scene_json", help="Path to scene metadata JSON.")
+    parser.add_argument("user_json", nargs="?", help="Path to user profile JSON.")
+    parser.add_argument(
+        "--user-key",
+        choices=sorted(USER_PERSONAS.keys()),
+        help="Use a predefined user persona key.",
+    )
+    args = parser.parse_args()
 
-    scene_path = sys.argv[1]
-    user_path = sys.argv[2]
+    if args.user_key:
+        user = get_user_profile(args.user_key)
+    elif args.user_json:
+        user = UserProfile(**_load_json(args.user_json))
+    else:
+        parser.error("Provide a user JSON path or --user-key.")
 
-    user = UserProfile(**_load_json(user_path))
-    scene = GetMetadata.from_file(scene_path)
+    scene = GetMetadata.from_file(args.scene_json)
 
     service = SeamlessAdService()
-    try:
-        response = service.generate_ad_response(user, scene)
-        print(json.dumps(response.model_dump(), indent=2))
-    except RuntimeError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+    response = service.generate_ad_response(user, scene)
+    print(json.dumps(response.model_dump(), indent=2))
 
 
 if __name__ == "__main__":

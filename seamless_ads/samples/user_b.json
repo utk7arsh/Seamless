@@ -1,0 +1,14 @@
+{
+  "age_range": "30-44",
+  "household_size": 1,
+  "location_zip": "98109",
+  "location_metro": "Seattle Metro",
+  "dietary_preferences": ["balanced", "low_sugar"],
+  "brand_affinities": {"Spindrift": 0.6, "Coca-Cola": 0.3},
+  "cuisine_affinities": {"Japanese": 0.6, "Mediterranean": 0.5},
+  "watch_time_context": "weekday_evening",
+  "engagement_signals": {
+    "prefers_pickup": true,
+    "prefers_premium": true
+  }
+}
