@@ -1,8 +1,9 @@
-# Welcome to your Lovable project
+# Seamless
+*Have a seamless experience!*
 
-## Project info
-
-
+## HOW TO RUN
+`cd frontend` <br>
+`npm run dev`
 
 
 # Figma Link

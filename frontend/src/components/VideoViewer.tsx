@@ -23,12 +23,14 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
   const content = allContent.find((c) => c.id === contentId);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cartGlowTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cartGlow, setCartGlow] = useState(false);
 
   const video = videoRef.current;
 
@@ -91,6 +93,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
   useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      if (cartGlowTimeoutRef.current) clearTimeout(cartGlowTimeoutRef.current);
     };
   }, []);
 
@@ -103,6 +106,15 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
       if (e.key === " ") {
         e.preventDefault();
         togglePlay();
+      }
+      if (e.key === "[") {
+        e.preventDefault();
+        if (cartGlowTimeoutRef.current) clearTimeout(cartGlowTimeoutRef.current);
+        setCartGlow(true);
+        cartGlowTimeoutRef.current = setTimeout(() => {
+          setCartGlow(false);
+          cartGlowTimeoutRef.current = null;
+        }, 2000);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -146,7 +158,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
         </button>
       </div>
 
-      {/* Shopping cart: corner icon, moves up when timeline is visible (z-20 so always clickable) */}
+      {/* Shopping cart: corner icon, moves up when timeline is visible (z-20 so always clickable); "[" glows it */}
       <button
         type="button"
         onClick={(e) => {
@@ -158,6 +170,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
           p-2 rounded-lg
           bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300
           ${showControls ? "bottom-28 opacity-100" : "bottom-4 opacity-70"}
+          ${cartGlow ? "ring-2 ring-red-500 ring-offset-2 ring-offset-black shadow-[0_0_20px_rgba(239,68,68,0.6)]" : ""}
         `}
         aria-label="Cart"
       >
@@ -187,15 +200,24 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
           ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
       >
-        {/* Seek bar */}
-        <div className="mb-3">
+        {/* Seek bar with red history bar (watched progress) */}
+        <div className="mb-3 relative h-6 flex items-center">
+          {/* Gray track background */}
+          <div className="absolute left-0 right-0 h-1.5 rounded-full bg-white/20" aria-hidden />
+          {/* Red history bar: watched portion */}
+          <div
+            className="absolute left-0 h-1.5 rounded-l-full bg-red-600 transition-[width] duration-100"
+            style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
+            aria-hidden
+          />
           <input
             type="range"
             min={0}
             max={duration || 100}
             value={currentTime}
             onChange={handleSeek}
-            className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/30 accent-red-600 hover:accent-red-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110"
+            className="relative w-full h-6 appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-runnable-track]:bg-transparent"
+            aria-label="Seek"
           />
         </div>
 
