@@ -4,13 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "npm run movies:pull && vite",
+    "dev:no-sync": "vite",
+    "build": "npm run movies:pull && vite build",
+    "build:no-sync": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "movies:push": "node scripts/snowflake-movies.cjs push",
+    "movies:pull": "node scripts/snowflake-movies.cjs pull"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -84,6 +88,8 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "dotenv": "^16.4.5",
+    "snowflake-sdk": "^2.3.3"
   }
 }

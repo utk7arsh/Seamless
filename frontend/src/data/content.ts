@@ -15,6 +15,27 @@ import thumbSquidGame from "@/assets/thumb-squid-game.jpg";
 import videoStrangerThings from "@/assets/video/STS3E4.mp4";
 import videoBreakingBad from "@/assets/video/BBS3E2.mp4";
 
+import moviesData from "./movies.json";
+
+/** Map of asset keys (from movies.json) to bundled image/video URLs */
+const assetMap: Record<string, string> = {
+  thumbBreakingBad,
+  thumbNoir,
+  thumbScifi,
+  thumbFantasy,
+  thumbHorror,
+  thumbAction,
+  thumbRomcom,
+  thumbDocumentary,
+  thumbAnime,
+  thumbCrime,
+  thumbAdventure,
+  thumbStrangerThings,
+  thumbSquidGame,
+  videoStrangerThings,
+  videoBreakingBad,
+};
+
 export interface ContentItem {
   id: string;
   title: string;
@@ -68,45 +89,58 @@ export const users: AppUser[] = [
   },
 ];
 
-const allContent: ContentItem[] = [
-  { id: "1", title: "Stranger Things", ad_timing: 886, ad_duration: 3.5, video: videoStrangerThings, image: thumbStrangerThings, match: 98, rating: "16+", seasons: 4, description: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments and the supernatural.", year: 2016 },
-  { id: "2", title: "Breaking Bad", ad_timing: (35*60)+29, ad_duration: 20, video: videoBreakingBad, image: thumbBreakingBad, match: 97, rating: "18+", seasons: 5, description: "A chemistry teacher diagnosed with cancer teams up with a former student to manufacture crystal meth.", year: 2008 },
-  { id: "3", title: "Dark City", ad_timing: 0, ad_duration: 0, video: thumbNoir, image: thumbNoir, match: 92, rating: "16+", seasons: 3, description: "A detective navigates the shadowy underworld of a city consumed by corruption and secrets.", year: 2022 },
-  { id: "4", title: "Beyond Earth", ad_timing: 0, ad_duration: 0, video: thumbScifi, image: thumbScifi, match: 89, rating: "13+", seasons: 2, description: "An astronaut embarks on a perilous mission to save humanity from extinction.", year: 2023 },
-  { id: "5", title: "Dragon's Reign", ad_timing: 0, ad_duration: 0, video: thumbFantasy, image: thumbFantasy, match: 95, rating: "16+", seasons: 4, description: "Kingdoms clash as ancient dragons awaken from their centuries-long slumber.", year: 2020 },
-  { id: "6", title: "The Haunting", ad_timing: 0, ad_duration: 0, video: thumbHorror, image: thumbHorror, match: 87, rating: "18+", seasons: 2, description: "A family moves into a house with a dark past, unleashing unspeakable horrors.", year: 2021 },
-  { id: "7", title: "Velocity", ad_timing: 0, ad_duration: 0, video: thumbAction, image: thumbAction, match: 90, rating: "16+", seasons: 1, description: "An elite driver is drawn into an underground racing syndicate with deadly stakes.", year: 2024 },
-  { id: "8", title: "Paris Connection", ad_timing: 0, ad_duration: 0, video: thumbRomcom, image: thumbRomcom, match: 85, rating: "13+", seasons: 3, description: "Two strangers keep running into each other across the romantic streets of Paris.", year: 2022 },
-  { id: "9", title: "Deep Blue", ad_timing: 0, ad_duration: 0, video: thumbDocumentary, image: thumbDocumentary, match: 93, rating: "PG", seasons: 1, description: "Explore the mysterious depths of Earth's oceans and the incredible creatures within.", year: 2023 },
-  { id: "10", title: "Neon District", ad_timing: 0, ad_duration: 0, video: thumbAnime, image: thumbAnime, match: 91, rating: "16+", seasons: 2, description: "In a cyberpunk future, a hacker uncovers a conspiracy that threatens all of society.", year: 2024 },
-  { id: "11", title: "The Syndicate", ad_timing: 0, ad_duration: 0, video: thumbCrime, image: thumbCrime, match: 88, rating: "18+", seasons: 3, description: "An undercover agent infiltrates one of the world's most dangerous criminal organizations.", year: 2021 },
-  { id: "12", title: "Summit", ad_timing: 0, ad_duration: 0, video: thumbAdventure, image: thumbAdventure, match: 94, rating: "13+", seasons: 1, description: "A mountaineer attempts the impossible: summiting the world's most treacherous peaks solo.", year: 2023 },
-  { id: "13", title: "Stranger Things", ad_timing: 0, ad_duration: 0, video: thumbStrangerThings, image: thumbStrangerThings, match: 97, rating: "18+", seasons: 5, description: "A chemistry teacher diagnosed with cancer teams up with a former student to manufacture crystal meth.", year: 2008 },
+/** Movie record from movies.json (synced from Snowflake via npm run movies:pull) */
+interface MovieRecord {
+  id: string;
+  title: string;
+  video_path: string;
+  image_path: string;
+  ad_timing: number;
+  ad_duration: number;
+  match?: number;
+  rating?: string;
+  seasons?: number;
+  description?: string;
+  year?: number;
+}
 
-];
+/** Build content (allContent, contentRows, featuredContent) from a list of movie records. */
+export function buildContentFromMovies(movies: MovieRecord[]): {
+  allContent: ContentItem[];
+  contentRows: ContentRow[];
+  featuredContent: ContentItem;
+} {
+  const allContent: ContentItem[] = movies.map((m) => ({
+    id: m.id,
+    title: m.title,
+    video: assetMap[m.video_path] ?? thumbStrangerThings,
+    image: assetMap[m.image_path] ?? thumbStrangerThings,
+    ad_timing: m.ad_timing,
+    ad_duration: m.ad_duration,
+    match: m.match,
+    rating: m.rating,
+    seasons: m.seasons,
+    description: m.description,
+    year: m.year,
+  }));
+  const contentRowConfig: { title: string; itemIds: string[] }[] = [
+    { title: "Trending Now", itemIds: ["2", "3", "4", "5", "6"] },
+    { title: "Popular on Netflix", itemIds: ["7", "8", "9", "10", "11", "12"] },
+    { title: "Top 10 in Your Country", itemIds: ["2", "1", "5", "10", "11", "4"] },
+    { title: "New Releases", itemIds: ["7", "9", "4", "11", "8", "3"] },
+    { title: "My List", itemIds: ["1", "5", "8", "10", "2", "9"] },
+  ];
+  const byId = new Map(allContent.map((c) => [c.id, c]));
+  const contentRows: ContentRow[] = contentRowConfig.map((row) => ({
+    title: row.title,
+    items: row.itemIds.map((id) => byId.get(id)).filter(Boolean) as ContentItem[],
+  }));
+  return { allContent, contentRows, featuredContent: allContent[0]! };
+}
 
-export const contentRows: ContentRow[] = [
-  {
-    title: "Trending Now",
-    items: [allContent[1], allContent[2], allContent[3], allContent[4], allContent[5]],
-  },
-  {
-    title: "Popular on Netflix",
-    items: [allContent[6], allContent[7], allContent[8], allContent[9], allContent[10], allContent[11]],
-  },
-  {
-    title: "Top 10 in Your Country",
-    items: [allContent[1], allContent[0], allContent[4], allContent[9], allContent[11], allContent[3]],
-  },
-  {
-    title: "New Releases",
-    items: [allContent[6], allContent[9], allContent[3], allContent[11], allContent[8], allContent[2]],
-  },
-  {
-    title: "My List",
-    items: [allContent[0], allContent[4], allContent[7], allContent[10], allContent[1], allContent[8]],
-  },
-];
+const staticContent = buildContentFromMovies(moviesData as MovieRecord[]);
+const allContent = staticContent.allContent;
+const contentRows = staticContent.contentRows;
+const featuredContent = staticContent.featuredContent;
 
-export const featuredContent = allContent[0];
-export { allContent };
+export { contentRows, featuredContent, allContent };

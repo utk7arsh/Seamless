@@ -1,12 +1,13 @@
 import { Play, Info } from "lucide-react";
 import heroImage from "@/assets/hero-stranger-things.png";
-import { featuredContent } from "@/data/content";
+import { useMovies } from "@/data/MoviesContext";
 
 interface HeroBannerProps {
   onPlay: (id: string) => void;
 }
 
 const HeroBanner = ({ onPlay }: HeroBannerProps) => {
+  const { featuredContent } = useMovies();
   return (
     <div className="relative w-full h-[85vh] min-h-[500px]">
       <div className="absolute inset-0">

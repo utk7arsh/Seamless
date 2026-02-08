@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { allContent } from "@/data/content";
+import { useMovies } from "@/data/MoviesContext";
 import { getAdsForContent, type AdSegment } from "@/data/contentAdSegments";
 import { getProductsForContent } from "@/data/contentProducts";
 import videoStrangerThings from "@/assets/video/STS3E4.mp4";
@@ -60,6 +60,7 @@ function formatTime(seconds: number): string {
 }
 
 const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
+  const { allContent } = useMovies();
   const content = allContent.find((c) => c.id === contentId);
   const timeOfAd = content?.ad_timing ?? DEFAULT_AD_TIMING;
   const adDurationSec = content?.ad_duration ?? DEFAULT_AD_DURATION_SEC;

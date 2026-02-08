@@ -5,10 +5,12 @@ import ContentRow from "@/components/ContentRow";
 import VideoViewer from "@/components/VideoViewer";
 import UserSwitchToast from "@/components/UserSwitchToast";
 import UserSwitcher from "@/components/UserSwitcher";
-import { contentRows, users } from "@/data/content";
+import { useMovies } from "@/data/MoviesContext";
+import { users } from "@/data/content";
 import { toast } from "sonner";
 
 const Index = () => {
+  const { contentRows } = useMovies();
   const [currentUser, setCurrentUser] = useState<number | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [resumeTime, setResumeTime] = useState<number | undefined>(undefined);
