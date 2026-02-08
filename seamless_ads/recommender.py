@@ -12,6 +12,9 @@ class AdRecommender:
         return product_key, rationale, targeting
 
     def _build_targeting_context(self, user: UserProfile, scene: VideoMetadata) -> AdAttributes:
+        episode_terms = self._episode_terms(scene)
+        prominent_products = self._prominent_products(scene)
+
         price_sensitivity = "med"
         if user.engagement_signals.get("often_uses_deals"):
             price_sensitivity = "low"
@@ -32,9 +35,17 @@ class AdRecommender:
             delivery_preference = "pickup"
 
         target_category = "snacks"
-        if any(tag in scene.scene_tags for tag in ["pizza", "dinner", "late_night"]):
+        if "pizza" in prominent_products:
             target_category = "frozen"
-        if any(tag in scene.scene_tags for tag in ["beverage", "soda", "cola", "drink"]):
+        if "beverage" in prominent_products or "soda" in prominent_products or "cola" in prominent_products:
+            target_category = "beverage"
+        if any(tag in scene.scene_tags for tag in ["pizza", "dinner", "late_night"]) or (
+            {"late_night", "sleepover", "game_night"} & episode_terms
+        ):
+            target_category = "frozen"
+        if any(tag in scene.scene_tags for tag in ["beverage", "soda", "cola", "drink"]) or (
+            {"beverage", "soda", "cola"} & episode_terms
+        ):
             target_category = "beverage"
 
         return AdAttributes(
@@ -43,6 +54,31 @@ class AdRecommender:
             health_tilt=health_tilt,
             delivery_preference=delivery_preference,
         )
+
+    @staticmethod
+    def _episode_terms(scene: VideoMetadata) -> set[str]:
+        if scene.episode is None:
+            return set()
+        episode = scene.episode
+        return {
+            *(g.lower() for g in episode.genres),
+            *(t.lower() for t in episode.tone_tags),
+            *(s.lower() for s in episode.setting_tags),
+            *(k.lower() for k in episode.keywords),
+            (episode.show_title or "").lower(),
+            (episode.episode_title or "").lower(),
+        }
+
+    @staticmethod
+    def _prominent_products(scene: VideoMetadata) -> set[str]:
+        if scene.episode is None:
+            return set()
+        signals = set()
+        for product in scene.episode.prominent_products:
+            signals.add(product.category.lower())
+            signals.update(label.lower() for label in product.labels)
+            signals.update(brand.lower() for brand in product.brands)
+        return signals
 
     def _select_product(
         self,
@@ -53,30 +89,64 @@ class AdRecommender:
         labels = {obj.label.lower() for obj in scene.detected_objects}
         tags = {tag.lower() for tag in scene.scene_tags}
         dialogue = {kw.lower() for kw in scene.dialogue_keywords}
+        episode_terms = self._episode_terms(scene)
+        prominent_products = self._prominent_products(scene)
         rationale: list[str] = []
 
-        pizza_signals = {"pizza"} & (labels | tags | dialogue)
-        beverage_signals = {"soda", "cola", "coke", "beverage", "drink", "can"} & (labels | tags | dialogue)
-        tech_signals = {"laptop", "computer", "device", "work"} & (labels | tags | dialogue)
+        all_terms = labels | tags | dialogue | episode_terms
+
+        # Scene-level cues still win, but episode metadata can break ties or fill gaps.
+        pizza_signals = {"pizza", "slice", "cheesy"} & all_terms
+        beverage_signals = {"soda", "cola", "coke", "beverage", "drink", "can"} & all_terms
+        tech_signals = {"laptop", "computer", "device", "work", "surveillance", "lab", "investigation"} & all_terms
+
+        hangout_signals = {
+            "kids",
+            "friends",
+            "sleepover",
+            "game_night",
+            "dungeons & dragons",
+            "dungeons_and_dragons",
+            "arcade",
+            "suburb",
+            "small_town",
+        } & all_terms
 
         coke_affinity = user.brand_affinities.get("Coca-Cola", 0.0)
 
-        if pizza_signals:
-            rationale.append("Scene contains pizza cues")
-            if "late_night" in user.watch_time_context:
-                rationale.append("Late-night context favors warm comfort food")
+        if "pizza" in prominent_products:
+            rationale.append("Episode metadata shows prominent pizza presence")
             return "pizza", rationale
 
-        if beverage_signals or coke_affinity >= 0.6:
-            if beverage_signals:
-                rationale.append("Scene contains beverage cues")
+        if {"beverage", "soda", "cola"} & prominent_products:
+            rationale.append("Episode metadata shows prominent beverage presence")
+            if coke_affinity >= 0.6:
+                rationale.append("User affinity tilts toward Coca-Cola")
+            return "coke", rationale
+
+        if pizza_signals:
+            rationale.append("Scene contains food/hangout cues aligned with pizza")
+            if "late_night" in user.watch_time_context or "late_night" in all_terms or "night" in all_terms:
+                rationale.append("Night context favors warm comfort food")
+            return "pizza", rationale
+
+        if tech_signals:
+            rationale.append("Episode/scene suggests tech/work context")
+            return "laptop", rationale
+
+        if hangout_signals:
+            rationale.append("Episode/scene suggests a group hangout vibe (pizza-friendly)")
+            return "pizza", rationale
+
+        if beverage_signals:
+            rationale.append("Scene contains beverage cues")
             if coke_affinity >= 0.6:
                 rationale.append("High Coca-Cola brand affinity")
             return "coke", rationale
 
-        if tech_signals:
-            rationale.append("Scene suggests tech/work context")
-            return "laptop", rationale
+        if coke_affinity >= 0.6 and (targeting.target_category == "beverage" or {"beverage", "soda", "cola"} & all_terms):
+            rationale.append("No strong visual cues; fell back to top brand affinity (Coca-Cola)")
+            return "coke", rationale
 
         rationale.append("Defaulted to universal placement")
         if targeting.target_category == "beverage":

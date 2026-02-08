@@ -1,0 +1,15 @@
+{
+  "age_range": "25-34",
+  "household_size": 2,
+  "location_zip": "94107",
+  "location_metro": "SF Bay Area",
+  "dietary_preferences": ["comfort_food", "no_beef"],
+  "brand_affinities": {"Coca-Cola": 0.85, "Pepsi": 0.2},
+  "cuisine_affinities": {"Italian": 0.7, "Mexican": 0.4},
+  "watch_time_context": "late_night",
+  "engagement_signals": {
+    "often_pauses_for_food_scenes": true,
+    "often_uses_deals": true,
+    "prefers_delivery": true
+  }
+}

@@ -1,0 +1,36 @@
+[
+  {
+    "contentId": "1",
+    "products": [
+      {
+        "product": "Pepsi-Cola 12 Pack Cans",
+        "link": "https://www.kroger.com/p/pepsi-cola-soda-pop/0001200080994",
+        "price": 6.99,
+        "description": "12 fl oz cans. The bold, refreshing taste of Pepsi. Perfect for late-night binge sessions with your favorite show."
+      },
+      {
+        "product": "Pepsi Zero Sugar 12 Pack",
+        "link": "https://www.kroger.com/p/pepsi-zero-sugar/0004300002131",
+        "price": 6.49,
+        "description": "Same great Pepsi taste, zero sugar. 12 fl oz cans. Stay refreshed without the guilt."
+      }
+    ]
+  },
+  {
+    "contentId": "2",
+    "products": [
+      {
+        "product": "Kilng Stone-Fired Pepperoni Pizza",
+        "link": "https://www.kroger.com/p/red-baron-pepperoni-classic-crust-frozen-pizza/0007218063473",
+        "price": 12.99,
+        "description": "Stone-fired thin crust with premium pepperoni and mozzarella. Ready in minutes. The perfect companion for drama."
+      },
+      {
+        "product": "Kilng Stone-Fired Supreme Pizza",
+        "link": "https://www.kroger.com/p/kilng-pizza-supreme/0001234567891",
+        "price": 14.99,
+        "description": "Loaded with pepperoni, sausage, bell peppers, onions, and olives. Stone-fired crispy crust."
+      }
+    ]
+  }
+]

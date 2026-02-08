@@ -1,10 +1,30 @@
 {
-  "scene_id": "scene_beverage_002",
-  "timestamp_range": [120.0, 124.5],
+  "scene_id": "bb_s3e2_surveillance_home_001",
+  "timestamp_range": [1989.4, 1996.2],
+  "episode": {
+    "show_title": "Breaking Bad",
+    "season": 3,
+    "episode": 2,
+    "episode_title": "Caballo sin Nombre",
+    "original_release_date": "2010-03-28",
+    "running_time_minutes": 47,
+    "maturity_rating": "TV-MA",
+    "genres": ["crime drama", "thriller"],
+    "tone_tags": ["tense", "gritty", "dark"],
+    "setting_tags": ["southwest", "suburb", "home", "surveillance", "desert"],
+    "keywords": ["family", "law_enforcement", "stakeout", "legal"],
+    "prominent_products": [
+      {
+        "category": "pizza",
+        "labels": ["pizza"],
+        "brands": [],
+        "prominence": "high"
+      }
+    ]
+  },
   "detected_objects": [
-    {"label": "soda", "confidence": 0.91, "bbox": [0.62, 0.38, 0.12, 0.25]},
-    {"label": "can", "confidence": 0.76, "bbox": [0.66, 0.4, 0.1, 0.22]}
+    {"label": "camera", "confidence": 0.81, "bbox": [0.23, 0.26, 0.12, 0.14]}
   ],
-  "scene_tags": ["beverage", "friends", "chill"],
-  "dialogue_keywords": ["drink", "refreshing"]
+  "scene_tags": ["home", "surveillance", "argument", "tense", "night"],
+  "dialogue_keywords": ["watching", "legal", "home"]
 }

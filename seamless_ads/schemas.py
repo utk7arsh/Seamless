@@ -45,11 +45,41 @@ class DetectedObject(BaseModel):
 class VideoMetadata(BaseModel):
     """Normalized metadata from video understanding system."""
 
+    class EpisodeMetadata(BaseModel):
+        """Show/episode-level metadata (stable across scenes)."""
+
+        class ProductSignal(BaseModel):
+            """Prominent product presence in the episode."""
+
+            category: str = Field(description="Product category, e.g. pizza, beverage, tech")
+            labels: list[str] = Field(default_factory=list, description="Observed product labels")
+            brands: list[str] = Field(default_factory=list, description="Observed brands (if any)")
+            prominence: Literal["low", "med", "high"] = Field(description="Visibility/prominence level")
+
+        show_title: str = Field(description="Show title, e.g. Stranger Things")
+        season: int = Field(ge=1, description="Season number (1-indexed)")
+        episode: int = Field(ge=1, description="Episode number (1-indexed)")
+        episode_title: str = Field(description="Episode title")
+        original_release_date: Optional[str] = Field(
+            default=None, description="Original release/air date, ISO-8601 (YYYY-MM-DD)"
+        )
+        running_time_minutes: Optional[int] = Field(default=None, ge=1, le=180, description="Runtime in minutes")
+        maturity_rating: Optional[str] = Field(default=None, description="Rating, e.g. TV-14 / TV-MA")
+
+        genres: list[str] = Field(default_factory=list, description="High-level genres")
+        tone_tags: list[str] = Field(default_factory=list, description="Tone/mood tags")
+        setting_tags: list[str] = Field(default_factory=list, description="Setting tags")
+        keywords: list[str] = Field(default_factory=list, description="Non-spoilery episode keywords")
+        prominent_products: list[ProductSignal] = Field(
+            default_factory=list, description="Prominent food/drink/tech presence"
+        )
+
     scene_id: str
     timestamp_range: list[float] = Field(description="Timestamp range [start_sec, end_sec]")
     detected_objects: list[DetectedObject] = Field(default_factory=list)
     scene_tags: list[str] = Field(default_factory=list)
     dialogue_keywords: list[str] = Field(default_factory=list)
+    episode: Optional[EpisodeMetadata] = Field(default=None, description="Episode-level metadata")
 
     @field_validator("timestamp_range")
     @classmethod

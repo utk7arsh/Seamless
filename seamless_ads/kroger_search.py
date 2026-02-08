@@ -20,7 +20,7 @@ class ToolClient(ABC):
         pass
 
     @abstractmethod
-    def get_product(self, product_id: str) -> dict:
+    def get_product(self, product_id: str) -> dict: 
         pass
 
     @abstractmethod

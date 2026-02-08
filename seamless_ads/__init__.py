@@ -8,6 +8,7 @@ from .schemas import (
     ProductResult,
 )
 from .service import SeamlessAdService
+from .user_profiles import USER_PERSONAS, get_user_profile
 
 __all__ = [
     "UserProfile",
@@ -16,4 +17,6 @@ __all__ = [
     "SeamlessAdResponse",
     "ProductResult",
     "SeamlessAdService",
+    "USER_PERSONAS",
+    "get_user_profile",
 ]

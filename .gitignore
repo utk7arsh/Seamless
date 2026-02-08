@@ -1,3 +1,5 @@
+*.mp4
+
 # Logs
 logs
 *.log
@@ -6,6 +8,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.pdf
 
 node_modules
 dist
@@ -22,3 +25,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.env
+videos/

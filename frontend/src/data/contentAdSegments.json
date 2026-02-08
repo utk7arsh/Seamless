@@ -1,0 +1,50 @@
+[
+  {
+    "userId": 1,
+    "contentId": "1",
+    "ads": [
+      {
+        "storagePath": "/video/elevenPepsi.mp4",
+        "startTime": 886,
+        "endTime": 889.5,
+        "color": "#f59e0b"
+      }
+    ]
+  },
+  {
+    "userId": 1,
+    "contentId": "2",
+    "ads": [
+      {
+        "storagePath": "/video/kilng_pizza_gen.mp4",
+        "startTime": 2130,
+        "endTime": 2136,
+        "color": "#f59e0b"
+      }
+    ]
+  },
+  {
+    "userId": 2,
+    "contentId": "1",
+    "ads": [
+      {
+        "storagePath": "/video/elevenPepsi.mp4",
+        "startTime": 886,
+        "endTime": 889.5,
+        "color": "#22c55e"
+      }
+    ]
+  },
+  {
+    "userId": 2,
+    "contentId": "2",
+    "ads": [
+      {
+        "storagePath": "/video/Kilng_pizza_gen.mp4",
+        "startTime": 2130,
+        "endTime": 2136,
+        "color": "#3b82f6"
+      }
+    ]
+  }
+]
