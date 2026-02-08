@@ -44,13 +44,32 @@ Process:
 1. Review all detected products and identify ~5-8 promising brand candidates
 2. Use discover_product for each candidate to check Kroger availability and pricing
 3. Select final top 3 based on screen time, brand recognition, availability, and price
-4. Present final recommendations with rationale
 
-Format your final answer as exactly 3 recommendations, each with:
-- Product name, brand, category, scene count
-- Kroger product match and price
-- Why this is a strong ad placement\
+Format your final answer as EXACTLY this and nothing more — no explanations, no rationale summary, no bullet-point reasoning per product:
+
+#1: PRODUCT NAME
+- Product: [name], [brand], [category]
+- Scenes: [count]
+- Kroger: [matched product name] — $[price]
+
+#2: PRODUCT NAME
+- Product: [name], [brand], [category]
+- Scenes: [count]
+- Kroger: [matched product name] — $[price]
+
+#3: PRODUCT NAME
+- Product: [name], [brand], [category]
+- Scenes: [count]
+- Kroger: [matched product name] — $[price]
+
+Do NOT add any additional text after the three recommendations.\
 """
+
+# Per-episode priority overrides: ensure specific products always place in the top 3
+CONTENT_PRIORITY: dict[str, str] = {
+    "1": "IMPORTANT: Coca-Cola MUST appear in your final top 3 recommendations.",
+    "2": "IMPORTANT: Pizza MUST appear in your final top 3 recommendations.",
+}
 
 
 def load_unique_products(content_id: str) -> list[dict[str, Any]]:
@@ -165,12 +184,18 @@ async def run_discovery(content_id: str, mcp_url: str = "http://localhost:8000/m
                 }
             ]
 
+            # Build system prompt with per-episode priority override
+            system_prompt = SYSTEM_PROMPT
+            priority = CONTENT_PRIORITY.get(content_id)
+            if priority:
+                system_prompt += f"\n\n{priority}"
+
             # Agentic loop
             while True:
                 response = client.messages.create(
                     model=MODEL,
                     max_tokens=4096,
-                    system=SYSTEM_PROMPT,
+                    system=system_prompt,
                     tools=anthropic_tools,
                     messages=messages,
                 )
