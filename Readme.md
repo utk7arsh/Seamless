@@ -20,3 +20,21 @@ Seamless is an in-movie ad recommendation platform that turns streaming scenes i
 
 ## Figma Link
 [Figma Link](https://www.figma.com/design/Kp0Qqttd2zFr8WxsHhYQ3m/Netflix-replica?node-id=17-16&t=CbwDDoV2HzISE3FM-0)
+
+## Snowflake Ingestion
+Load the structured product JSON into Snowflake tables for scenes and product mentions.
+
+### Setup
+1. Install Python deps:
+   `pip install -r requirements.txt`
+2. Create a `.env` from `.env.example` and fill in your Snowflake credentials.
+
+### Run
+```
+python scripts/load_structured_products_to_snowflake.py \
+  --inputs outputs/BBS3E2_structured_products.json outputs/STS3E4_structured_products.json
+```
+
+### Output Tables
+- `VIDEO_SCENES`: one row per scene with `PRODUCT_MENTIONS` as VARIANT.
+- `PRODUCT_MENTIONS`: one row per product mention per scene.
