@@ -51,44 +51,38 @@
             </div>
           </div>
           <div class="hero-visual">
-            <div class="screen">
-              <div class="screen-header">
-                <span>Scene: Kitchen Reveal</span>
-                <span class="pill">Ad Slot 00:34</span>
+            <div class="hero-image-wrapper">
+              <div class="hero-floating-card hero-card-1">
+                <div class="floating-card-icon">🎬</div>
+                <p class="floating-card-text">Scene Understanding</p>
               </div>
-              <div class="screen-body">
-                <div class="scene-card">
-                  <p class="scene-label">Detected Objects</p>
-                  <div class="tags">
-                    <span>Stainless Fridge</span>
-                    <span>Cast Iron Pan</span>
-                    <span>Heritage Olive Oil</span>
-                    <span>Glassware</span>
+              <div class="hero-floating-card hero-card-2">
+                <div class="floating-card-icon">✨</div>
+                <p class="floating-card-text">AI-Powered Overlays</p>
+              </div>
+              <div class="hero-floating-card hero-card-3">
+                <div class="floating-card-icon">🛒</div>
+                <p class="floating-card-text">Instant Checkout</p>
+              </div>
+              <div class="hero-main-visual">
+                <div class="visual-glow"></div>
+                <div class="visual-content">
+                  <div class="visual-header">
+                    <span class="visual-badge">LIVE</span>
+                    <span class="visual-text">Breaking Bad • S3 E2</span>
+                  </div>
+                  <div class="visual-body">
+                    <div class="product-overlay">
+                      <div class="product-image">🍕</div>
+                      <div class="product-info">
+                        <p class="product-name">Kilng Stone-Fired Pizza</p>
+                        <p class="product-price">$12.99</p>
+                      </div>
+                      <button class="product-cta">Buy Now</button>
+                    </div>
                   </div>
                 </div>
-                <div class="ad-card">
-                  <p class="scene-label">Seamless Placement</p>
-                  <p class="ad-headline">
-                    "Cookware that matches the story."
-                  </p>
-                  <div class="ad-footer">
-                    <span>Brand: Kroma</span>
-                    <span>Timing: 0.4s</span>
-                  </div>
-                </div>
               </div>
-            </div>
-
-            <div class="metric-item">
-              <div class="metric-number" data-target="99" data-suffix="%">0%</div>
-              <p class="metric-label">Viewer Satisfaction</p>
-              <p class="metric-description">Non-disruptive ad experience</p>
-            </div>
-
-            <div class="metric-item">
-              <div class="metric-number" data-target="2.8" data-suffix="s">0s</div>
-              <p class="metric-label">Avg. Engagement</p>
-              <p class="metric-description">Seconds per ad interaction</p>
             </div>
           </div>
         </div>
@@ -245,10 +239,6 @@
               <p class="tech-name">Kling AI</p>
             </div>
             <div class="tech-card">
-              <div class="tech-icon">💳</div>
-              <p class="tech-name">Flowglad</p>
-            </div>
-            <div class="tech-card">
               <div class="tech-icon">🛍️</div>
               <p class="tech-name">Kroger API</p>
             </div>
@@ -276,56 +266,5 @@
       </div>
     </footer>
 
-    <script>
-      // Animated counter for metrics
-      function animateCounter(element, target, duration = 2000) {
-        const isDecimal = target.toString().includes('.');
-        const decimals = isDecimal ? target.toString().split('.')[1].length : 0;
-        const suffix = element.getAttribute('data-suffix') || '';
-        const increment = target / (duration / 16);
-        let current = 0;
-
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          const displayValue = isDecimal ? current.toFixed(decimals) : Math.floor(current);
-          element.textContent = displayValue + suffix;
-        }, 16);
-      }
-
-      // Intersection Observer for scroll-triggered animations
-      const observerOptions = {
-        threshold: 0.3,
-        rootMargin: '0px 0px -100px 0px'
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            
-            // Trigger counter animation for metrics
-            const metricNumber = entry.target.querySelector('.metric-number');
-            if (metricNumber && !metricNumber.classList.contains('animated')) {
-              metricNumber.classList.add('animated');
-              const target = parseFloat(metricNumber.getAttribute('data-target'));
-              animateCounter(metricNumber, target);
-            }
-            
-            observer.unobserve(entry.target);
-          }
-        });
-      }, observerOptions);
-
-      // Observe all metric items
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.metric-item').forEach(item => {
-          observer.observe(item);
-        });
-      });
-    </script>
   </body>
 </html>
