@@ -1,10 +1,38 @@
 {
-  "scene_id": "scene_pizza_001",
-  "timestamp_range": [842.2, 849.8],
+  "scene_id": "st_s1e1_night_bikes_001",
+  "timestamp_range": [226.4, 232.1],
+  "episode": {
+    "show_title": "Stranger Things",
+    "season": 1,
+    "episode": 1,
+    "episode_title": "Chapter One: The Vanishing of Will Byers",
+    "original_release_date": "2016-07-15",
+    "running_time_minutes": 49,
+    "maturity_rating": "TV-14",
+    "genres": ["science fiction", "horror", "mystery", "drama"],
+    "tone_tags": ["nostalgic", "eerie", "suspenseful"],
+    "setting_tags": ["1983", "small_town", "suburb", "midwest", "night", "woods"],
+    "keywords": ["kids", "bikes", "dungeons_and_dragons", "missing_person", "government_lab", "diner"],
+    "prominent_products": [
+      {
+        "category": "beverage",
+        "labels": ["soda", "diner_drink"],
+        "brands": [],
+        "prominence": "high"
+      },
+      {
+        "category": "snacks",
+        "labels": ["french_fries"],
+        "brands": [],
+        "prominence": "med"
+      }
+    ]
+  },
   "detected_objects": [
-    {"label": "pizza", "confidence": 0.94, "bbox": [0.18, 0.42, 0.36, 0.28]},
-    {"label": "table", "confidence": 0.88, "bbox": [0.05, 0.65, 0.9, 0.3]}
+    {"label": "bicycle", "confidence": 0.93, "bbox": [0.14, 0.56, 0.42, 0.34]},
+    {"label": "flashlight", "confidence": 0.86, "bbox": [0.58, 0.44, 0.12, 0.18]},
+    {"label": "walkie_talkie", "confidence": 0.74, "bbox": [0.72, 0.52, 0.11, 0.14]}
   ],
-  "scene_tags": ["pizza", "party", "friends", "late_night"],
-  "dialogue_keywords": ["slice", "cheesy", "hungry"]
+  "scene_tags": ["kids", "friends", "suburb", "night", "woods", "mystery"],
+  "dialogue_keywords": ["bike", "home", "where", "will"]
 }
