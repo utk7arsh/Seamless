@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seamless - Scene-Aware Ads for Streaming</title>
+    <meta
+      name="description"
+      content="Seamless turns streaming scenes into shoppable moments with precision scene understanding, product graphs, and personalization."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="container nav">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-name">Seamless</span>
+        </div>
+        <nav class="nav-links">
+          <a href="#what">What</a>
+          <a href="#how">How</a>
+          <a href="#why">Why</a>
+          <a href="#demo">Demo</a>
+        </nav>
+        <div class="nav-actions">
+          <button class="ghost">Request Demo</button>
+          <button class="solid">Talk to Us</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Seamless Ads</p>
+            <h1>
+              The ad moment that feels like part of the scene.
+            </h1>
+            <p class="lead">
+              Seamless turns streaming content into shoppable moments by
+              understanding every scene, mapping products, and delivering
+              precise, non-disruptive brand placements.
+            </p>
+            <div class="hero-actions">
+              <button class="solid">See the Hackathon Demo</button>
+            </div>
+            <div class="hero-metrics">
+              <div>
+                <p class="metric">3x</p>
+                <p class="metric-label">Lift in intent</p>
+              </div>
+              <div>
+                <p class="metric">85%</p>
+                <p class="metric-label">Scene relevance score</p>
+              </div>
+              <div>
+                <p class="metric">0%</p>
+                <p class="metric-label">Mid-roll fatigue</p>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="screen">
+              <div class="screen-header">
+                <span>Scene: Kitchen Reveal</span>
+                <span class="pill">Ad Slot 00:34</span>
+              </div>
+              <div class="screen-body">
+                <div class="scene-card">
+                  <p class="scene-label">Detected Objects</p>
+                  <div class="tags">
+                    <span>Stainless Fridge</span>
+                    <span>Cast Iron Pan</span>
+                    <span>Heritage Olive Oil</span>
+                    <span>Glassware</span>
+                  </div>
+                </div>
+                <div class="ad-card">
+                  <p class="scene-label">Seamless Placement</p>
+                  <p class="ad-headline">
+                    "Cookware that matches the story."
+                  </p>
+                  <div class="ad-footer">
+                    <span>Brand: Kroma</span>
+                    <span>Timing: 0.4s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="signal-grid">
+              <div class="signal">
+                <p>Scene understanding</p>
+                <span></span>
+              </div>
+              <div class="signal">
+                <p>Product graph</p>
+                <span></span>
+              </div>
+              <div class="signal">
+                <p>Personalization</p>
+                <span></span>
+              </div>
+            </div>
+            <div class="flow" aria-label="Seamless flow animation">
+              <div class="flow-step">
+                <span class="dot"></span>
+                <p>Detect</p>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-step">
+                <span class="dot"></span>
+                <p>Match</p>
+              </div>
+              <div class="flow-line"></div>
+              <div class="flow-step">
+                <span class="dot"></span>
+                <p>Place</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="what" class="section">
+        <div class="container two-col">
+          <div>
+            <h2>What we do</h2>
+            <p>
+              We turn movies into shoppable moments without breaking the story.
+              Seamless analyzes every scene, maps products to transcripts, and
+              lets viewers grab the exact item they saw, instantly.
+            </p>
+            <div class="highlights">
+              <div>
+                <p class="highlight-title">Preprocessed scene index</p>
+                <p>
+                  We index scenes and product-transcript links with VideoDB and
+                  an LLM layer ahead of time.
+                </p>
+              </div>
+              <div>
+                <p class="highlight-title">On-frame brand overlay</p>
+                <p>
+                  Ads are branded directly on the product using Kling for
+                  photoreal overlays.
+                </p>
+              </div>
+              <div>
+                <p class="highlight-title">Instant sidebar checkout</p>
+                <p>
+                  Viewers can buy now or save for later without pausing the
+                  movie.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <p class="eyebrow">Seamless Engine</p>
+            <h3>From scene to shelf in seconds.</h3>
+            <p>
+              A multimodal pipeline turns scenes into a searchable graph, then
+              orchestrates the right product moment at the right time.
+            </p>
+            <div class="feature-grid">
+              <span>VideoDB</span>
+              <span>LLM layer</span>
+              <span>Scene graph</span>
+              <span>Transcript map</span>
+              <span>Kling overlay</span>
+              <span>Checkout</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="section dark-panel">
+        <div class="container">
+          <div class="section-header">
+            <h2>How we do it</h2>
+            <p>
+              A three-step system that keeps every ad moment authentic.
+            </p>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <p class="step-number">01</p>
+              <h3>Understand the scene</h3>
+              <p>
+                Preprocessing builds a scene index from `videodb.ipynb`,
+                aligning transcripts to product moments.
+              </p>
+            </div>
+            <div class="step">
+              <p class="step-number">02</p>
+              <h3>Invoke the MCP stack</h3>
+              <p>
+                When playback starts, Dedalus Labs MCP calls our shopping
+                toolkit to find nearby inventory.
+              </p>
+            </div>
+            <div class="step">
+              <p class="step-number">03</p>
+              <h3>Overlay + checkout</h3>
+              <p>
+                We apply the Kling brand overlay, then surface the product in
+                the sidebar for instant checkout or save.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="why" class="section">
+        <div class="container">
+          <div class="section-header">
+            <h2>Why we do it</h2>
+            <p>
+              Advertising should respect the story and the viewer. Seamless
+              protects the viewing experience while unlocking new revenue.
+            </p>
+          </div>
+          <div class="why-grid">
+            <div class="why-card">
+              <h3>For viewers</h3>
+              <p>
+                No forced breaks. Ads that enhance the scene, not derail it.
+              </p>
+            </div>
+            <div class="why-card">
+              <h3>For creators</h3>
+              <p>
+                Monetize without sacrificing tone, pacing, or authenticity.
+              </p>
+            </div>
+            <div class="why-card">
+              <h3>For brands</h3>
+              <p>
+                Premium attention in moments of real intent and relevance.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="demo" class="section demo">
+        <div class="container demo-grid">
+          <div>
+            <h2>Built for Devfest Columbia University 2026.</h2>
+            <p>
+              A focused demo that shows scene indexing, MCP orchestration, and
+              instant shoppable outcomes inside the viewing experience.
+            </p>
+            <ul class="demo-list">
+              <li>Scene-level metadata pipeline</li>
+              <li>Retail catalog integration</li>
+              <li>Timing and context scoring</li>
+              <li>Viewer-first interaction design</li>
+            </ul>
+          </div>
+          <div class="demo-cta">
+            <p class="eyebrow">Ready to see it live?</p>
+            <h3>Let Seamless orchestrate your next ad moment.</h3>
+            <button class="solid">Launch Demo</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <div class="brand">
+            <span class="brand-mark"></span>
+            <span class="brand-name">Seamless</span>
+          </div>
+          <p>
+            Scene-aware advertising for streaming and immersive media.
+          </p>
+        </div>
+        <div class="footer-links">
+          <a href="#what">What</a>
+          <a href="#how">How</a>
+          <a href="#why">Why</a>
+          <a href="#demo">Demo</a>
+        </div>
+        <div class="footer-note">
+          <p>Devfest Columbia University 2026.</p>
+          <p>Made by Utkarsh, Aman, Om, and John with &lt;3.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
