@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart } from "lucide-react";
+import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart, Loader2 } from "lucide-react";
 import { allContent } from "@/data/content";
 import { getAdsForContent, type AdSegment } from "@/data/contentAdSegments";
 import { getProductsForContent } from "@/data/contentProducts";
@@ -28,6 +28,7 @@ interface VideoViewerProps {
   /** Current user id (matches AppUser.id); used for user-segregated ad segments. */
   userId: number;
   onClose: () => void;
+  resumeTime?: number;
 }
 
 // Netflix glowing bar: red strip on the RIGHT edge of the video viewer.
@@ -124,6 +125,64 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
     },
     [video]
   );
+
+  const handleCheckout = useCallback(async () => {
+    const apiKey = import.meta.env.VITE_FLOWGLAD_API_KEY;
+    if (!apiKey || apiKey === "your_flowglad_api_key_here") {
+      const msg = "Flowglad API key is not configured. Add VITE_FLOWGLAD_API_KEY to frontend/.env.local";
+      setCheckoutError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const videoTime = videoRef.current?.currentTime ?? 0;
+      const baseUrl = window.location.origin + window.location.pathname;
+      const resumeUrl = `${baseUrl}?resumeVideo=${encodeURIComponent(contentId)}&t=${Math.floor(videoTime)}`;
+      const successResumeUrl = `${resumeUrl}&checkout=success`;
+
+      const res = await fetch("/api/flowglad/checkout-sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          checkoutSession: {
+            type: "product",
+            anonymous: true,
+            customerExternalId: null,
+            priceSlug: "papa_john_s_pizza",
+            successUrl: successResumeUrl,
+            cancelUrl: resumeUrl,
+            quantity: 1,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Checkout failed (${res.status}): ${body}`);
+      }
+
+      const data = await res.json();
+      const checkoutUrl = data?.checkoutSession?.url ?? data?.url;
+      if (!checkoutUrl) {
+        throw new Error("No checkout URL returned from Flowglad");
+      }
+
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Checkout failed";
+      setCheckoutError(msg);
+      toast.error(msg);
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }, []);
 
   const resetControlsTimer = useCallback(() => {
     setShowControls(true);
@@ -356,6 +415,7 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
+          setCheckoutError(null);
           setSidebarOpen(true);
         }}
         className={`
