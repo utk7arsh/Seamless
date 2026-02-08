@@ -44,10 +44,8 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api\/flowglad/, "/api/v1"),
       },
-      "/api/discover": {
-        target: "http://localhost:8001",
-        changeOrigin: true,
-      },
+      // "/api/discover" → localhost:8001 — uncomment when the discover service is running
+      // "/api/discover": { target: "http://localhost:8001", changeOrigin: true },
     },
   },
   plugins: [react(), snowflakeMoviesPlugin(), mode === "development" && componentTagger()].filter(Boolean),
