@@ -94,6 +94,13 @@ def _rank_common_products(payload: dict, forced_top: str | None = None) -> list[
     return ranked
 
 
+def _filtered_payload_for_print(payload: dict) -> dict:
+    filtered = dict(payload)
+    scenes = payload.get("scenes") or []
+    filtered["scenes"] = [scene for scene in scenes if scene.get("product_mentions")]
+    return filtered
+
+
 def magic_print_indexing(
     bbs_path: str,
     sts_path: str,
@@ -107,9 +114,10 @@ def magic_print_indexing(
     }
     for path in (bbs_path, sts_path):
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        printable_payload = _filtered_payload_for_print(payload)
         header = f"\n=== indexing stream: {Path(path).name} ===\n"
         _stream_print(header, chunk_size=24, delay_s=0.015)
-        _stream_print(json.dumps(payload, indent=2), chunk_size=8, delay_s=0.02)
+        _stream_print(json.dumps(printable_payload, indent=2), chunk_size=8, delay_s=0.02)
 
         time.sleep(pause_s)
         forced = overrides.get(Path(path).name.lower())
