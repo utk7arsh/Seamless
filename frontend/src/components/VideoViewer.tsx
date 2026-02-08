@@ -13,6 +13,8 @@ function getVideoSrc(contentId: string): string {
 
 interface VideoViewerProps {
   contentId: string;
+  /** Current user id (matches AppUser.id); used for user-segregated ad segments. */
+  userId: number;
   onClose: () => void;
 }
 
@@ -33,7 +35,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
+const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
   const content = allContent.find((c) => c.id === contentId);
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,7 +61,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
 
   const video = videoRef.current;
   const mainVideoSrc = getVideoSrc(contentId);
-  const adSegments = getAdsForContent(contentId);
+  const adSegments = getAdsForContent(contentId, userId);
   const inAdSlot =
     !isPlayingAd &&
     adSegments.some(
@@ -344,15 +346,15 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
           Search for: "glowing bar" or "right-0" or "z-[95]" to find it.
           Styling: Netflix red (#E50914), gradient + box-shadow glow. */}
       {isAdZone && (
-      <div
-        className="fixed right-0 top-0 bottom-0 w-[10px] pointer-events-none z-[95] animate-in fade-in duration-500"
-        style={{
-          background: "linear-gradient(to left,rgba(229,9,20,0.9) 0%,"+
-                          " rgba(229,9,20,0.35) 60%, transparent 100%)",
-          boxShadow: "-32px 0 160px rgba(229,9,20,0.7), -16px 0 96px rgba(229,9,20,0.6), -8px 0 48px rgba(229,9,20,0.5)",
-        }}
-        aria-hidden
-      />
+        <div
+          className="fixed right-0 top-0 bottom-0 w-[10px] pointer-events-none z-[95] animate-in fade-in duration-500"
+          style={{
+            background: "linear-gradient(to left,rgba(229,9,20,0.9) 0%,"+
+                            " rgba(229,9,20,0.35) 60%, transparent 100%)",
+            boxShadow: "-32px 0 160px rgba(229,9,20,0.7), -16px 0 96px rgba(229,9,20,0.6), -8px 0 48px rgba(229,9,20,0.5)",
+          }}
+          aria-hidden
+        />
       )}
       {/* Center play/pause (big) when paused */}
       {!isPlaying && (

@@ -42,7 +42,7 @@ const Index = () => {
         ))}
       </div>
 
-      {videoId && <VideoViewer contentId={videoId} onClose={closeVideo} />}
+      {videoId && <VideoViewer contentId={videoId} userId={activeUserId} onClose={closeVideo} />}
       {showUserToast && <UserSwitchToast currentUser={activeUserId} />}
       <UserSwitcher
         currentUserId={currentUser}
