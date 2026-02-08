@@ -5,3 +5,4 @@ rich
 pydantic
 anthropic
 python-dotenv
+snowflake-connector-python
