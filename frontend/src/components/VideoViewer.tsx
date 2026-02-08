@@ -7,15 +7,22 @@ import { getAdsForContent, type AdSegment } from "@/data/contentAdSegments";
 import { getProductsForContent } from "@/data/contentProducts";
 import videoStrangerThings from "@/assets/video/STS3E4.mp4";
 import videoBreakingBad from "@/assets/video/BBS3E2.mp4";
-import adVideoElevenPepsi from "@/assets/video/elevenPepsi.mp4";
-import adVideoKilngPizza from "@/assets/video/kilng_pizza_gen.mp4";
 
-/** Resolve ad segment storagePath to a playable URL. Videos are imported from assets. */
+// Resolve ad videos from contentAdSegments.json: any .mp4 in assets/video/ is available by filename
+const adVideoGlob = import.meta.glob("@/assets/video/*.mp4", { eager: true, query: "?url", import: "default" });
+const AD_VIDEO_BY_FILENAME: Record<string, string> = {};
+for (const path of Object.keys(adVideoGlob)) {
+  const filename = path.split("/").pop()?.toLowerCase() ?? "";
+  const mod = adVideoGlob[path] as { default?: string } | string;
+  const url = typeof mod === "string" ? mod : mod?.default;
+  if (filename && url) AD_VIDEO_BY_FILENAME[filename] = url;
+}
+
+/** Resolve ad segment storagePath (from contentAdSegments.json) to a playable URL. */
 function resolveAdVideoUrl(storagePath: string): string {
   const lower = storagePath.toLowerCase().replace(/\\/g, "/");
-  if (lower.endsWith("elevenpepsi.mp4")) return adVideoElevenPepsi;
-  if (lower.endsWith("kilng_pizza_gen.mp4")) return adVideoKilngPizza;
-  return storagePath;
+  const filename = lower.split("/").pop() ?? lower;
+  return AD_VIDEO_BY_FILENAME[filename] ?? storagePath;
 }
 
 /** Videos are imported from src/assets/video/. */
@@ -33,17 +40,17 @@ interface VideoViewerProps {
   resumeTime?: number;
 }
 
-// Netflix glowing bar: red strip on the RIGHT edge of the video viewer.
-// To find it in this file, search for: "glowing bar" or "right-0" or "z-[95]".
+// Cart glow: only around the shopping icon during ad. Hotspot: hover over cart (not whole side) to open sidebar.
 
 const DEFAULT_AD_TIMING = 60;
 const DEFAULT_AD_DURATION_SEC = 10;
-const RIGHT_EDGE_HOVER_PERCENT = 20; // sidebar opens when cursor within this % of viewport width from right edge (during ad)
+const CART_HOTSPOT_PADDING = 24; // extra px around cart icon for hover-to-open sidebar (during ad)
+const GLOW_MARGIN_BEFORE_SEC = 3; // timeline glow starts this many seconds before ad slot
+const GLOW_MARGIN_AFTER_SEC = 5;  // timeline glow extends this many seconds after ad slot
 const SEEK_AMOUNT = 10;
 const CONTROLS_HIDE_DELAY = 3000;
 
-// NETFLIX GLOW BAR: The red glowing strip on the RIGHT edge of the video viewer
-// is rendered in the return() below — search for "glowing bar" or "right-0" or "z-[95]"
+// Cart icon has red glow during ad (isAdZone); hotspot to open sidebar is only around the icon.
 
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -96,8 +103,29 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
     adSegments.find(
       (seg) => currentTime >= seg.startTime && currentTime < seg.endTime
     );
-  /** True when we're in any ad segment (main timeline) or playing an ad; used for cart sidebar and right-edge glow. */
+  /** True when we're in any ad segment (main timeline) or playing an ad; used for ad cut logic. */
   const isAdZone = inAdSlot || isPlayingAd;
+
+  /** Merged callout windows: 3s before + 5s after each ad slot, overlapping ranges merged. Used for cart glow + hotspot. */
+  const adCalloutRanges = (() => {
+    if (!duration || duration <= 0) return [];
+    const ranges = adSegments
+      .filter((seg) => seg.endTime <= duration)
+      .map((seg) => ({
+        start: Math.max(0, seg.startTime - GLOW_MARGIN_BEFORE_SEC),
+        end: Math.min(duration, seg.endTime + GLOW_MARGIN_AFTER_SEC),
+      }))
+      .sort((a, b) => a.start - b.start);
+    const merged: { start: number; end: number }[] = [];
+    for (const r of ranges) {
+      const last = merged[merged.length - 1];
+      if (last && r.start <= last.end) last.end = Math.max(last.end, r.end);
+      else merged.push({ start: r.start, end: r.end });
+    }
+    return merged;
+  })();
+  /** Cart icon glow and hotspot active in this window (margin 3s before, 5s after, merged with adjacent callouts). */
+  const isCartCalloutZone = isPlayingAd || adCalloutRanges.some((r) => currentTime >= r.start && currentTime < r.end);
 
   const togglePlay = useCallback(() => {
     if (!video) return;
@@ -197,31 +225,27 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
     }, CONTROLS_HIDE_DELAY);
   }, []);
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      resetControlsTimer();
-      if (isAdZone) {
-        const rightZonePx = window.innerWidth * (RIGHT_EDGE_HOVER_PERCENT / 100);
-        const nearRightEdge = e.clientX >= window.innerWidth - rightZonePx;
-        setSidebarOpen(nearRightEdge);
-      }
-    },
-    [resetControlsTimer, isAdZone]
-  );
+  const handleMouseMove = useCallback(() => {
+    resetControlsTimer();
+  }, [resetControlsTimer]);
 
   const handleMouseLeave = useCallback(() => {
     if (videoRef.current && !videoRef.current.paused) setShowControls(false);
-    if (isAdZone) setSidebarOpen(false);
-  }, [isAdZone]);
+  }, []);
 
-  const wasAdZoneRef = useRef(false);
+  const wasCartCalloutZoneRef = useRef(false);
   const isHoveringSidebarRef = useRef(false);
+  const cartHotspotCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (wasAdZoneRef.current && !isAdZone) {
+    if (wasCartCalloutZoneRef.current && !isCartCalloutZone) {
+      if (cartHotspotCloseTimeoutRef.current) {
+        clearTimeout(cartHotspotCloseTimeoutRef.current);
+        cartHotspotCloseTimeoutRef.current = null;
+      }
       if (!isHoveringSidebarRef.current) setSidebarOpen(false);
     }
-    wasAdZoneRef.current = isAdZone;
-  }, [isAdZone]);
+    wasCartCalloutZoneRef.current = isCartCalloutZone;
+  }, [isCartCalloutZone]);
 
   // When opening different content, reset to main video
   useEffect(() => {
@@ -423,43 +447,49 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
         </button>
       </div>
 
-      {/* Shopping cart: corner icon, moves up when timeline is visible (z-20 so always clickable); "[" glows it */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setCheckoutError(null);
-          setSidebarOpen(true);
-        }}
+      {/* Shopping cart: hotspot only around the icon (during ad). Glow only on the icon. */}
+      <div
         className={`
-          absolute right-4 z-20
-          p-2 rounded-lg
-          bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300
+          absolute right-4 z-20 flex items-center justify-end
           ${showControls ? "bottom-28 opacity-100" : "bottom-4 opacity-70"}
-          ${cartGlow ? "ring-2 ring-red-500 ring-offset-2 ring-offset-black shadow-[0_0_20px_rgba(239,68,68,0.6)]" : ""}
         `}
-        aria-label="Cart"
+        style={{ padding: CART_HOTSPOT_PADDING }}
+        onMouseEnter={() => {
+          if (isCartCalloutZone) {
+            if (cartHotspotCloseTimeoutRef.current) {
+              clearTimeout(cartHotspotCloseTimeoutRef.current);
+              cartHotspotCloseTimeoutRef.current = null;
+            }
+            setSidebarOpen(true);
+          }
+        }}
+        onMouseLeave={() => {
+          if (isCartCalloutZone) {
+            cartHotspotCloseTimeoutRef.current = setTimeout(() => {
+              if (!isHoveringSidebarRef.current) setSidebarOpen(false);
+              cartHotspotCloseTimeoutRef.current = null;
+            }, 200);
+          }
+        }}
       >
-        <ShoppingCart size={22} />
-      </button>
-
-      {/* ========== NETFLIX-STYLE GLOWING BAR — RIGHT SIDE OF SCREEN ==========
-          FIND IT: search this file for "glowing bar" or "right-0" or "z-[95]"
-          Location: RIGHT SIDE of the video viewer, full height.
-          This is the red glow strip (like Google Gemini in Chrome).
-          Search for: "glowing bar" or "right-0" or "z-[95]" to find it.
-          Styling: Netflix red (#E50914), gradient + box-shadow glow. */}
-      {isAdZone && (
-        <div
-          className="fixed right-0 top-0 bottom-0 w-[10px] pointer-events-none z-[95] animate-in fade-in duration-500"
-          style={{
-            background: "linear-gradient(to left,rgba(229,9,20,0.9) 0%,"+
-                            " rgba(229,9,20,0.35) 60%, transparent 100%)",
-            boxShadow: "-32px 0 160px rgba(229,9,20,0.7), -16px 0 96px rgba(229,9,20,0.6), -8px 0 48px rgba(229,9,20,0.5)",
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCheckoutError(null);
+            setSidebarOpen(true);
           }}
-          aria-hidden
-        />
-      )}
+          className={`
+            p-2 rounded-lg
+            bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300
+            ${cartGlow ? "ring-2 ring-red-500 ring-offset-2 ring-offset-black shadow-[0_0_20px_rgba(239,68,68,0.6)]" : ""}
+            ${isCartCalloutZone ? "ring-2 ring-red-500/90 ring-offset-2 ring-offset-black shadow-[0_0_24px_rgba(229,9,20,0.7)]" : ""}
+          `}
+          aria-label="Cart"
+        >
+          <ShoppingCart size={22} />
+        </button>
+      </div>
       {/* Center play/pause (big) when paused */}
       {!isPlaying && (
         <button
@@ -493,29 +523,43 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
             style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
             aria-hidden
           />
-          {/* Glowing segments: one per ad, each with its color from contentAdSegments.json */}
+          {/* Glowing segments: margin 3s before + 5s after each ad slot; overlapping ranges merged */}
           {!isPlayingAd &&
             duration > 0 &&
-            adSegments.map((seg) => {
-              if (seg.endTime > duration) return null;
-              const left = (seg.startTime / duration) * 100;
-              const width = ((seg.endTime - seg.startTime) / duration) * 100;
-              return (
+            (() => {
+              const glowColor = "#f59e0b";
+              const ranges: { start: number; end: number }[] = adSegments
+                .filter((seg) => seg.endTime <= duration)
+                .map((seg) => ({
+                  start: Math.max(0, seg.startTime - GLOW_MARGIN_BEFORE_SEC),
+                  end: Math.min(duration, seg.endTime + GLOW_MARGIN_AFTER_SEC),
+                }))
+                .sort((a, b) => a.start - b.start);
+              const merged: { start: number; end: number }[] = [];
+              for (const r of ranges) {
+                const last = merged[merged.length - 1];
+                if (last && r.start <= last.end) {
+                  last.end = Math.max(last.end, r.end);
+                } else {
+                  merged.push({ start: r.start, end: r.end });
+                }
+              }
+              return merged.map((r, i) => (
                 <div
-                  key={`${seg.startTime}-${seg.endTime}`}
+                  key={`${r.start}-${r.end}-${i}`}
                   className="absolute h-1.5 rounded-md pointer-events-none"
                   style={{
-                    left: `${left}%`,
-                    width: `${width}%`,
-                    backgroundColor: seg.color ?? "#f59e0b",
-                    boxShadow: `0 0 12px ${seg.color ?? "#f59e0b"}80`,
-                    border: `1px solid ${seg.color ?? "#f59e0b"}cc`,
+                    left: `${(r.start / duration) * 100}%`,
+                    width: `${((r.end - r.start) / duration) * 100}%`,
+                    backgroundColor: glowColor,
+                    boxShadow: `0 0 12px ${glowColor}80`,
+                    border: `1px solid ${glowColor}cc`,
                   }}
                   aria-hidden
-                  title="Ad slot"
+                  title="Ad callout"
                 />
-              );
-            })}
+              ));
+            })()}
           <input
             type="range"
             min={0}
@@ -581,7 +625,13 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
             <aside
               className={`fixed top-0 right-0 bottom-0 z-[210] w-full max-w-sm bg-neutral-900 border-l border-neutral-700 shadow-xl flex flex-col transition-transform duration-300 ease-out ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
               aria-hidden={!sidebarOpen}
-              onMouseEnter={() => { isHoveringSidebarRef.current = true; }}
+              onMouseEnter={() => {
+                if (cartHotspotCloseTimeoutRef.current) {
+                  clearTimeout(cartHotspotCloseTimeoutRef.current);
+                  cartHotspotCloseTimeoutRef.current = null;
+                }
+                isHoveringSidebarRef.current = true;
+              }}
               onMouseLeave={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
             >
               <div className="flex items-center justify-between p-4 border-b border-neutral-700">

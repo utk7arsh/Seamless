@@ -10,9 +10,9 @@
         "color": "#f59e0b"
       },
       {
-        "storagePath": "/video/STS3E4_14_45_14_42_1.mp4",
-        "startTime": 882,
-        "endTime": 885,
+        "storagePath": "/video/STS3E4_14_45_14_52_1.mp4",
+        "startTime": 885.5,
+        "endTime": 892,
         "color": "#22c55e"
       }
     ]
@@ -22,15 +22,15 @@
     "contentId": "1",
     "ads": [
       {
-        "storagePath": "/video/STS3E4_14_34_14_40_1.mp4",
+        "storagePath": "/video/STS3E4_14_34_14_40_2.mp4",
         "startTime": 874,
         "endTime": 880,
         "color": "#f59e0b"
       },
       {
-        "storagePath": "/video/STS3E4_14_45_14_42_1.mp4",
-        "startTime": 882,
-        "endTime": 885,
+        "storagePath": "/video/STS3E4_14_45_14_52_2.mp4",
+        "startTime": 885.5,
+        "endTime": 892,
         "color": "#22c55e"
       }
     ]
