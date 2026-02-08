@@ -2,7 +2,14 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart } from "lucide-react";
 import { allContent } from "@/data/content";
-import sampleVideo from "@/assets/video/breaking_bad.mp4";
+import { getAdsForContent, type AdSegment } from "@/data/contentAdSegments";
+
+/** Video folder is symlinked at frontend/public/video → repo /video (breaking_bad.mp4, BBS3E2.mp4, kilng_pizza_gen.mp4). */
+function getVideoSrc(contentId: string): string {
+  if (contentId === "1") return "/video/STS3E4.mp4";   // hero (Stranger Things S1 E1)
+  if (contentId === "2") return "/video/BBS3E2.mp4";
+  return "/video/breaking_bad.mp4";
+}
 
 interface VideoViewerProps {
   contentId: string;
@@ -12,8 +19,6 @@ interface VideoViewerProps {
 // Netflix glowing bar: red strip on the RIGHT edge of the video viewer.
 // To find it in this file, search for: "glowing bar" or "right-0" or "z-[95]".
 
-const time_of_ad = 60;
-const AD_DURATION_SEC = 10; // pretend ad plays for 10 seconds
 const RIGHT_EDGE_HOVER_PERCENT = 10; // sidebar opens when cursor within this % of viewport width from right edge (during ad)
 const SEEK_AMOUNT = 10;
 const CONTROLS_HIDE_DELAY = 3000;
@@ -40,8 +45,33 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
   const [showControls, setShowControls] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cartGlow, setCartGlow] = useState(false);
+  /** True until the video can start playing (lighter: we don't buffer the whole file upfront). */
+  const [videoReady, setVideoReady] = useState(false);
+  /** When true, the video element is playing an ad from contentAdSegments; we cut back at ad end. */
+  const [isPlayingAd, setIsPlayingAd] = useState(false);
+  const [videoSrc, setVideoSrc] = useState(() => getVideoSrc(contentId));
+  const mainVideoSrcRef = useRef<string>("");
+  const mainResumeTimeRef = useRef(0);
+  const mainDurationRef = useRef(0);
+  const pendingResumeRef = useRef(false);
+  const currentAdSegmentRef = useRef<AdSegment | null>(null);
+  const adSlotTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const video = videoRef.current;
+  const mainVideoSrc = getVideoSrc(contentId);
+  const adSegments = getAdsForContent(contentId);
+  const inAdSlot =
+    !isPlayingAd &&
+    adSegments.some(
+      (seg) => currentTime >= seg.startTime && currentTime < seg.endTime
+    );
+  const currentSegment =
+    !isPlayingAd &&
+    adSegments.find(
+      (seg) => currentTime >= seg.startTime && currentTime < seg.endTime
+    );
+  /** True when we're in any ad segment (main timeline) or playing an ad; used for cart sidebar and right-edge glow. */
+  const isAdZone = inAdSlot || isPlayingAd;
 
   const togglePlay = useCallback(() => {
     if (!video) return;
@@ -83,8 +113,6 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     }, CONTROLS_HIDE_DELAY);
   }, []);
 
-  const isAdZone = duration > 0 && currentTime >= time_of_ad && currentTime < time_of_ad + AD_DURATION_SEC;
-
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       resetControlsTimer();
@@ -111,22 +139,105 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
     wasAdZoneRef.current = isAdZone;
   }, [isAdZone]);
 
+  // When opening different content, reset to main video
+  useEffect(() => {
+    if (adSlotTimerRef.current) {
+      clearTimeout(adSlotTimerRef.current);
+      adSlotTimerRef.current = null;
+    }
+    setVideoSrc(mainVideoSrc);
+    setIsPlayingAd(false);
+    pendingResumeRef.current = false;
+    currentAdSegmentRef.current = null;
+    setVideoReady(false);
+  }, [contentId, mainVideoSrc]);
+
   // VIDEO EVENT LISTENERS
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     const onTimeUpdate = () => setCurrentTime(v.currentTime);
-    const onLoadedMetadata = () => setDuration(v.duration);
-    const onEnded = () => setIsPlaying(false);
+    const onLoadedMetadata = () => {
+      setDuration(v.duration);
+      if (!isPlayingAd) mainDurationRef.current = v.duration;
+      if (pendingResumeRef.current) {
+        v.currentTime = mainResumeTimeRef.current;
+        setCurrentTime(mainResumeTimeRef.current);
+        setDuration(mainDurationRef.current);
+        pendingResumeRef.current = false;
+        v.play().catch(() => {});
+        setIsPlaying(true);
+        setVideoReady(true);
+      }
+    };
+    const onCanPlay = () => setVideoReady(true);
+    const onEnded = () => {
+      if (isPlayingAd && currentAdSegmentRef.current) {
+        if (adSlotTimerRef.current) {
+          clearTimeout(adSlotTimerRef.current);
+          adSlotTimerRef.current = null;
+        }
+        const seg = currentAdSegmentRef.current;
+        mainVideoSrcRef.current = mainVideoSrc;
+        mainResumeTimeRef.current = seg.endTime;
+        mainDurationRef.current = duration;
+        pendingResumeRef.current = true;
+        currentAdSegmentRef.current = null;
+        setVideoSrc(mainVideoSrc);
+        setIsPlayingAd(false);
+      } else {
+        setIsPlaying(false);
+      }
+    };
     v.addEventListener("timeupdate", onTimeUpdate);
     v.addEventListener("loadedmetadata", onLoadedMetadata);
+    v.addEventListener("canplay", onCanPlay);
     v.addEventListener("ended", onEnded);
     return () => {
       v.removeEventListener("timeupdate", onTimeUpdate);
       v.removeEventListener("loadedmetadata", onLoadedMetadata);
+      v.removeEventListener("canplay", onCanPlay);
       v.removeEventListener("ended", onEnded);
     };
-  }, []);
+  }, [isPlayingAd, mainVideoSrc, duration]);
+
+  // Seamless cut to ad when playback enters any ad segment. Ad plays for (endTime - startTime) only, then we resume at endTime.
+  useEffect(() => {
+    if (!inAdSlot || !currentSegment) return;
+    const v = videoRef.current;
+    if (!v) return;
+    mainVideoSrcRef.current = mainVideoSrc;
+    mainResumeTimeRef.current = currentSegment.endTime;
+    mainDurationRef.current = duration;
+    currentAdSegmentRef.current = currentSegment;
+    setVideoSrc(currentSegment.storagePath);
+    setIsPlayingAd(true);
+    setVideoReady(false);
+
+    const slotDurationMs = (currentSegment.endTime - currentSegment.startTime) * 1000;
+    adSlotTimerRef.current = setTimeout(() => {
+      adSlotTimerRef.current = null;
+      if (!currentAdSegmentRef.current) return;
+      const seg = currentAdSegmentRef.current;
+      mainVideoSrcRef.current = mainVideoSrc;
+      mainResumeTimeRef.current = seg.endTime;
+      mainDurationRef.current = duration;
+      pendingResumeRef.current = true;
+      currentAdSegmentRef.current = null;
+      setVideoSrc(mainVideoSrc);
+      setIsPlayingAd(false);
+    }, slotDurationMs);
+
+    const t = setTimeout(() => {
+      videoRef.current?.play().catch(() => {});
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      // Do NOT clear adSlotTimerRef here: when we set isPlayingAd(true), inAdSlot becomes false
+      // and this cleanup runs, which was cancelling the timer. Timer is cleared only when we
+      // cut back (in the timer callback or onEnded) or when contentId changes.
+    };
+  }, [inAdSlot, currentSegment, mainVideoSrc, duration]);
 
   // CLEANUP
   useEffect(() => {
@@ -168,15 +279,24 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
       onMouseLeave={handleMouseLeave}
     >
       {/* Layout order: Video, then top bar (close), cart, GLOW BAR (right edge), center play, bottom bar, cart sidebar portal */}
-
-      {/* Video */}
+      {/* Video: preload=metadata so we don't download the whole file until play; loading state until canplay */}
+      {!videoReady && (
+        <div className="absolute inset-0 z-[5] flex items-center justify-center bg-black">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+            <p className="text-white/80 text-sm">Loading video…</p>
+          </div>
+        </div>
+      )}
       <video
         ref={videoRef}
-        src={sampleVideo}
+        src={videoSrc}
         className="absolute inset-0 w-full h-full object-contain"
+        preload="metadata"
         autoPlay
         playsInline
         onClick={togglePlay}
+        onCanPlay={() => setVideoReady(true)}
       />
 
       {/* Top bar: close */}
@@ -223,7 +343,7 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
           This is the red glow strip (like Google Gemini in Chrome).
           Search for: "glowing bar" or "right-0" or "z-[95]" to find it.
           Styling: Netflix red (#E50914), gradient + box-shadow glow. */}
-      {currentTime >= time_of_ad && currentTime < time_of_ad + AD_DURATION_SEC && duration > time_of_ad && (
+      {isAdZone && (
       <div
         className="fixed right-0 top-0 bottom-0 w-[10px] pointer-events-none z-[95] animate-in fade-in duration-500"
         style={{
@@ -267,18 +387,29 @@ const VideoViewer = ({ contentId, onClose }: VideoViewerProps) => {
             style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
             aria-hidden
           />
-          {/* Yellow blob: 10-second ad segment on timeline */}
-          {duration > 0 && time_of_ad < duration && (
-            <div
-              className="absolute top-1/2 h-1.5 rounded-sm bg-yellow-400/90 shadow-[0_0_6px_rgba(250,204,21,0.6)] pointer-events-none"
-              style={{
-                left: `${(time_of_ad / duration) * 100}%`,
-                width: `${Math.min((AD_DURATION_SEC / duration) * 100, ((duration - time_of_ad) / duration) * 100)}%`,
-                transform: "translateY(-50%)",
-              }}
-              aria-hidden
-            />
-          )}
+          {/* Glowing segments: one per ad, each with its color from contentAdSegments.json */}
+          {!isPlayingAd &&
+            duration > 0 &&
+            adSegments.map((seg) => {
+              if (seg.endTime > duration) return null;
+              const left = (seg.startTime / duration) * 100;
+              const width = ((seg.endTime - seg.startTime) / duration) * 100;
+              return (
+                <div
+                  key={`${seg.startTime}-${seg.endTime}`}
+                  className="absolute h-1.5 rounded-md pointer-events-none"
+                  style={{
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    backgroundColor: seg.color ?? "#f59e0b",
+                    boxShadow: `0 0 12px ${seg.color ?? "#f59e0b"}80`,
+                    border: `1px solid ${seg.color ?? "#f59e0b"}cc`,
+                  }}
+                  aria-hidden
+                  title="Ad slot"
+                />
+              );
+            })}
           <input
             type="range"
             min={0}

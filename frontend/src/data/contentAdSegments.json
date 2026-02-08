@@ -1,0 +1,24 @@
+[
+  {
+    "contentId": "2",
+    "ads": [
+      {
+        "storagePath": "/video/kilng_pizza_gen.mp4",
+        "startTime": 2130,
+        "endTime": 2136,
+        "color": "#f59e0b"
+      }
+    ]
+  },
+  {
+    "contentId": "1",
+    "ads": [
+      {
+        "storagePath": "/video/elevenPepsi.mp4",
+        "startTime": 886,
+        "endTime": 889.5,
+        "color": "#f59e0b"
+      }
+    ]
+  }
+]

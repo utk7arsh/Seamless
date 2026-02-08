@@ -1,4 +1,4 @@
-import thumbSquidGame from "@/assets/thumb-squid-game.jpg";
+import thumbStrangerThings from "@/assets/hero-stranger-things.png";
 import thumbBreakingBad from "@/assets/thumb-breaking-bad.jpg";
 import thumbNoir from "@/assets/thumb-noir.jpg";
 import thumbScifi from "@/assets/thumb-scifi.jpg";
@@ -62,7 +62,7 @@ export const users: AppUser[] = [
 ];
 
 const allContent: ContentItem[] = [
-  { id: "1", title: "Squid Game", image: thumbSquidGame, match: 98, rating: "16+", seasons: 2, description: "Hundreds of cash-strapped players accept a strange invitation to compete in children's games for a tempting prize.", year: 2021 },
+  { id: "1", title: "Stranger Things", image: thumbStrangerThings, match: 98, rating: "16+", seasons: 4, description: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments and the supernatural.", year: 2016 },
   { id: "2", title: "Breaking Bad", image: thumbBreakingBad, match: 97, rating: "18+", seasons: 5, description: "A chemistry teacher diagnosed with cancer teams up with a former student to manufacture crystal meth.", year: 2008 },
   { id: "3", title: "Dark City", image: thumbNoir, match: 92, rating: "16+", seasons: 3, description: "A detective navigates the shadowy underworld of a city consumed by corruption and secrets.", year: 2022 },
   { id: "4", title: "Beyond Earth", image: thumbScifi, match: 89, rating: "13+", seasons: 2, description: "An astronaut embarks on a perilous mission to save humanity from extinction.", year: 2023 },
@@ -79,7 +79,7 @@ const allContent: ContentItem[] = [
 export const contentRows: ContentRow[] = [
   {
     title: "Trending Now",
-    items: [allContent[0], allContent[1], allContent[2], allContent[3], allContent[4], allContent[5]],
+    items: [allContent[1], allContent[2], allContent[3], allContent[4], allContent[5]],
   },
   {
     title: "Popular on Netflix",
