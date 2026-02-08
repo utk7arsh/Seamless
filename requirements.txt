@@ -1,0 +1,20 @@
+# Shopping Agent MCP Server Dependencies
+# Python 3.10+ required
+
+# MCP Framework
+dedalus-mcp>=0.1.0
+
+# Web Search
+duckduckgo-search>=6.0.0
+
+# Web Scraping
+playwright>=1.40.0
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# HTTP Requests (for Kroger API)
+requests>=2.28.0
