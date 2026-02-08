@@ -260,14 +260,19 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
     setVideoReady(false);
   }, [contentId, mainVideoSrc]);
 
-  // VIDEO EVENT LISTENERS
+  // VIDEO EVENT LISTENERS — during ad, keep UI on main video's timeline (avoid showing ad's duration/position)
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onTimeUpdate = () => setCurrentTime(v.currentTime);
+    const onTimeUpdate = () => {
+      const seg = currentAdSegmentRef.current;
+      if (seg) {
+        setCurrentTime(Math.min(seg.endTime, seg.startTime + v.currentTime));
+      } else {
+        setCurrentTime(v.currentTime);
+      }
+    };
     const onLoadedMetadata = () => {
-      setDuration(v.duration);
-      if (!isPlayingAd) mainDurationRef.current = v.duration;
       if (pendingResumeRef.current) {
         v.currentTime = mainResumeTimeRef.current;
         setCurrentTime(mainResumeTimeRef.current);
@@ -276,6 +281,12 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
         v.play().catch(() => {});
         setIsPlaying(true);
         setVideoReady(true);
+      } else if (currentAdSegmentRef.current) {
+        setDuration(mainDurationRef.current);
+        setCurrentTime(currentAdSegmentRef.current.startTime);
+      } else {
+        setDuration(v.duration);
+        mainDurationRef.current = v.duration;
       }
     };
     const onCanPlay = () => setVideoReady(true);
