@@ -62,13 +62,18 @@ Format your final answer as EXACTLY this and nothing more — no explanations, n
 - Scenes: [count]
 - Kroger: [matched product name] — $[price]
 
-Do NOT add any additional text after the three recommendations.\
+IMPORTANT: Do NOT add any additional text after or before the three recommendations. No filler text.\
 """
 
 # Per-episode priority overrides: ensure specific products always place in the top 3
 CONTENT_PRIORITY: dict[str, str] = {
     "1": "IMPORTANT: Coca-Cola MUST appear in your final top 3 recommendations.",
-    "2": "IMPORTANT: Pizza MUST appear in your final top 3 recommendations.",
+    "2": (
+        "IMPORTANT: Pizza MUST appear in your final top 3 recommendations. "
+        "For the Pizza entry, do NOT call discover_product or use Kroger. Instead present it as:\n"
+        "- Product: Domino's Pizza\n"
+        "- Source: DoorDash API — $14.59\n"
+    ),
 }
 
 

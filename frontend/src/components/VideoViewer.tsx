@@ -672,17 +672,17 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
                           <span className="text-3xl font-bold text-white">
                             ${featuredProduct.price.toFixed(2)}
                           </span>
-                          <span className="text-sm text-neutral-400">each</span>
+                          <span className="text-sm text-neutral-400">{featuredProduct.source === "DoorDash" ? "delivery" : "each"}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-neutral-400">
                           <span className="flex items-center gap-1">
                             <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
-                            In Stock
+                            {featuredProduct.source === "DoorDash" ? "Available" : "In Stock"}
                           </span>
                           <span>•</span>
-                          <span>Ready for pickup</span>
+                          <span>{featuredProduct.source === "DoorDash" ? "Delivery available" : "Ready for pickup"}</span>
                         </div>
                       </div>
                     </div>
@@ -723,7 +723,7 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
                     className="block w-full py-3 px-4 rounded-md bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors text-center"
                     onClick={() => { isHoveringSidebarRef.current = false; setSidebarOpen(false); }}
                   >
-                    Buy Now at Kroger
+                    {featuredProduct.source === "DoorDash" ? "Order on DoorDash" : "Buy Now at Kroger"}
                   </a>
                 ) : (
                   <button

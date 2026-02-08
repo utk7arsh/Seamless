@@ -7,6 +7,7 @@ export interface ProductItem {
   link: string;
   price: number;
   description: string;
+  source?: string;
 }
 
 export interface ContentProductsEntry {
