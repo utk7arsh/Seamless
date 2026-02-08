@@ -3,3 +3,5 @@ uvicorn[standard]
 mcp
 rich
 pydantic
+anthropic
+python-dotenv

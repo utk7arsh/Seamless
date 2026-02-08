@@ -7,7 +7,10 @@ from __future__ import annotations
 
 import asyncio
 
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI
+
+load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 

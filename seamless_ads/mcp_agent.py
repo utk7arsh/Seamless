@@ -1,22 +1,24 @@
-"""MCP Product Discovery Agent.
+"""Agentic Ad Placement Analyst.
 
-Connects to an MCP server and calls discover_product for each unique product
-found in a structured_products JSON file.
+Uses Claude as an LLM reasoner to intelligently select top 3 products for
+in-stream brand advertising from video scene detections. Calls the
+discover_product MCP tool selectively (~5-8 candidates) instead of brute-forcing
+all ~680 unique products.
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
+import os
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
+import anthropic
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, MofNCompleteColumn
 from rich.table import Table
 
 OUTPUTS_DIR = Path(__file__).resolve().parent.parent / "outputs"
@@ -25,6 +27,30 @@ CONTENT_FILE_MAP: dict[str, str] = {
     "1": "STS3E4_structured_products.json",
     "2": "BBS3E2_structured_products.json",
 }
+
+MODEL = "claude-sonnet-4-5-20250929"
+
+SYSTEM_PROMPT = """\
+You are the Seamless Ad Placement Analyst. Analyze products detected in a video \
+and select the top 3 for in-stream brand advertising.
+
+Selection criteria:
+- Must be a real, purchasable consumer brand (not generic props like "hospital gown")
+- Higher scene frequency = more screen time = better placement opportunity
+- Must be available at Kroger (use discover_product to verify pricing and availability)
+- Broad consumer appeal and recognizable branding preferred
+
+Process:
+1. Review all detected products and identify ~5-8 promising brand candidates
+2. Use discover_product for each candidate to check Kroger availability and pricing
+3. Select final top 3 based on screen time, brand recognition, availability, and price
+4. Present final recommendations with rationale
+
+Format your final answer as exactly 3 recommendations, each with:
+- Product name, brand, category, scene count
+- Kroger product match and price
+- Why this is a strong ad placement\
+"""
 
 
 def load_unique_products(content_id: str) -> list[dict[str, Any]]:
@@ -40,7 +66,6 @@ def load_unique_products(content_id: str) -> list[dict[str, Any]]:
     with open(filepath) as f:
         data = json.load(f)
 
-    # Count occurrences of each product_name across all scenes
     name_counter: Counter[str] = Counter()
     product_info: dict[str, dict[str, Any]] = {}
 
@@ -50,7 +75,6 @@ def load_unique_products(content_id: str) -> list[dict[str, Any]]:
             if not name:
                 continue
             name_counter[name] += 1
-            # Keep the first occurrence's metadata
             if name not in product_info:
                 product_info[name] = {
                     "product_name": name,
@@ -58,7 +82,6 @@ def load_unique_products(content_id: str) -> list[dict[str, Any]]:
                     "category": mention.get("category", "Unknown"),
                 }
 
-    # Build result sorted by frequency (most common first)
     results = []
     for name, count in name_counter.most_common():
         info = product_info[name]
@@ -68,20 +91,47 @@ def load_unique_products(content_id: str) -> list[dict[str, Any]]:
     return results
 
 
+def format_product_summary(products: list[dict[str, Any]]) -> str:
+    """Format deduplicated product list as compact text for the LLM context."""
+    lines = ["Product Name | Brand | Category | Scene Count", "--- | --- | --- | ---"]
+    for p in products:
+        lines.append(
+            f"{p['product_name']} | {p['brand']} | {p['category']} | {p['scene_count']}"
+        )
+    return "\n".join(lines)
+
+
+def mcp_tools_to_anthropic(mcp_tools: list[Any]) -> list[dict[str, Any]]:
+    """Convert MCP Tool objects to Anthropic tool_use format."""
+    anthropic_tools = []
+    for tool in mcp_tools:
+        anthropic_tools.append({
+            "name": tool.name,
+            "description": tool.description or "",
+            "input_schema": tool.inputSchema,
+        })
+    return anthropic_tools
+
+
 async def run_discovery(content_id: str, mcp_url: str = "http://localhost:8000/mcp") -> None:
-    """Connect to MCP server and discover products sequentially."""
+    """Run the agentic ad placement analysis."""
     console = Console()
-    filename = CONTENT_FILE_MAP.get(content_id, "unknown")
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        console.print("[bold red]Error: ANTHROPIC_API_KEY environment variable is not set[/bold red]")
+        return
 
     products = load_unique_products(content_id)
     unique_count = len(products)
+    product_summary = format_product_summary(products)
 
     # Header panel
     console.print()
     console.print(Panel(
-        f"[bold cyan]Seamless Product Discovery Agent[/bold cyan]\n"
-        f"Content: [yellow]{content_id}[/yellow] | File: [yellow]{filename}[/yellow]\n"
-        f"Unique products: [green]{unique_count}[/green] | MCP: [blue]{mcp_url}[/blue]",
+        f"[bold cyan]Seamless Ad Placement Agent[/bold cyan]\n"
+        f"Content: [yellow]{content_id}[/yellow] | [green]{unique_count}[/green] unique products\n"
+        f"Model: [magenta]{MODEL}[/magenta] | MCP: [blue]{mcp_url}[/blue]",
         border_style="bright_cyan",
     ))
 
@@ -90,7 +140,6 @@ async def run_discovery(content_id: str, mcp_url: str = "http://localhost:8000/m
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            # Verify tools
             tools_result = await session.list_tools()
             tool_names = [t.name for t in tools_result.tools]
             console.print(f"\nConnected to MCP server. Tools: [green]{tool_names}[/green]\n")
@@ -99,114 +148,108 @@ async def run_discovery(content_id: str, mcp_url: str = "http://localhost:8000/m
                 console.print("[bold red]Error: discover_product tool not found on MCP server[/bold red]")
                 return
 
-            # Results storage
-            found_count = 0
-            not_found_count = 0
-            error_count = 0
+            anthropic_tools = mcp_tools_to_anthropic(tools_result.tools)
 
-            # Build results table
-            table = Table(show_header=True, header_style="bold magenta", border_style="dim")
-            table.add_column("Product", style="white", min_width=18)
-            table.add_column("Brand/Cat", style="cyan", min_width=14)
-            table.add_column("Scenes", style="yellow", justify="right", min_width=6)
-            table.add_column("Kroger Match", style="green", min_width=22)
-            table.add_column("Price", style="white", justify="right", min_width=8)
+            client = anthropic.Anthropic()
 
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(),
-                MofNCompleteColumn(),
-                console=console,
-            ) as progress:
-                task = progress.add_task("Discovering products...", total=unique_count)
+            messages: list[dict[str, Any]] = [
+                {
+                    "role": "user",
+                    "content": (
+                        f"Here are {unique_count} unique products detected across scenes in the video:\n\n"
+                        f"{product_summary}\n\n"
+                        "Analyze these products and select the top 3 for in-stream brand ad placement. "
+                        "Use the discover_product tool to check Kroger availability and pricing for "
+                        "your shortlisted candidates."
+                    ),
+                }
+            ]
 
-                for product in products:
-                    name = product["product_name"]
-                    brand_cat = f"{product['brand']}/{product['category']}"
-                    scenes = str(product["scene_count"])
+            # Agentic loop
+            while True:
+                response = client.messages.create(
+                    model=MODEL,
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    tools=anthropic_tools,
+                    messages=messages,
+                )
+
+                # Process response content blocks
+                assistant_content: list[dict[str, Any]] = []
+                tool_use_blocks: list[dict[str, Any]] = []
+
+                for block in response.content:
+                    if block.type == "text":
+                        assistant_content.append({"type": "text", "text": block.text})
+                        # Print reasoning
+                        console.print()
+                        console.print("[bold]--- Agent Reasoning ---[/bold]", style="bright_cyan")
+                        console.print(block.text)
+
+                    elif block.type == "tool_use":
+                        assistant_content.append({
+                            "type": "tool_use",
+                            "id": block.id,
+                            "name": block.name,
+                            "input": block.input,
+                        })
+                        tool_use_blocks.append({
+                            "id": block.id,
+                            "name": block.name,
+                            "input": block.input,
+                        })
+
+                # Append assistant message
+                messages.append({"role": "assistant", "content": assistant_content})
+
+                # If no tool calls, we're done
+                if response.stop_reason == "end_turn" or not tool_use_blocks:
+                    break
+
+                # Process tool calls via MCP
+                tool_results: list[dict[str, Any]] = []
+                for tool_block in tool_use_blocks:
+                    tool_name = tool_block["name"]
+                    tool_input = tool_block["input"]
+                    tool_id = tool_block["id"]
+
+                    console.print(f"\n[bold yellow]🔧 {tool_name}[/bold yellow]({json.dumps(tool_input)})")
 
                     try:
-                        result = await session.call_tool(
-                            "discover_product",
-                            arguments={"query": name, "max_results": 1},
-                        )
+                        result = await session.call_tool(tool_name, arguments=tool_input)
 
-                        # Parse the tool result
-                        kroger_match = "No results"
-                        price = "-"
-                        match_style = "dim"
-
+                        # Extract text from result
+                        result_text = ""
                         if result.content:
-                            text_content = ""
-                            for block in result.content:
-                                if hasattr(block, "text"):
-                                    text_content += block.text
+                            for rb in result.content:
+                                if hasattr(rb, "text"):
+                                    result_text += rb.text
 
-                            if text_content.strip():
-                                try:
-                                    parsed = json.loads(text_content)
-                                    # Handle both list and dict responses
-                                    items = parsed if isinstance(parsed, list) else parsed.get("products", parsed.get("items", []))
-                                    if isinstance(items, list) and len(items) > 0:
-                                        item = items[0]
-                                        kroger_match = item.get("description", item.get("name", "Found"))[:30]
-                                        raw_price = item.get("price", item.get("regular_price"))
-                                        if raw_price is not None:
-                                            price = f"${float(raw_price):.2f}"
-                                        found_count += 1
-                                        match_style = "green"
-                                    elif isinstance(items, dict) and items:
-                                        kroger_match = items.get("description", items.get("name", "Found"))[:30]
-                                        raw_price = items.get("price", items.get("regular_price"))
-                                        if raw_price is not None:
-                                            price = f"${float(raw_price):.2f}"
-                                        found_count += 1
-                                        match_style = "green"
-                                    else:
-                                        not_found_count += 1
-                                except (json.JSONDecodeError, ValueError, TypeError):
-                                    # Non-JSON response — treat as a descriptive match
-                                    if "no results" in text_content.lower() or "not found" in text_content.lower():
-                                        not_found_count += 1
-                                    else:
-                                        kroger_match = text_content.strip()[:30]
-                                        found_count += 1
-                                        match_style = "green"
-                            else:
-                                not_found_count += 1
-                        else:
-                            not_found_count += 1
+                        console.print(f"   [dim]→ {result_text[:120]}[/dim]")
 
-                        table.add_row(
-                            name[:18],
-                            brand_cat[:14],
-                            scenes,
-                            f"[{match_style}]{kroger_match}[/{match_style}]",
-                            price,
-                        )
-
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tool_id,
+                            "content": result_text,
+                        })
                     except Exception as e:
-                        error_count += 1
-                        table.add_row(
-                            name[:18],
-                            brand_cat[:14],
-                            scenes,
-                            f"[red]Error: {str(e)[:20]}[/red]",
-                            "-",
-                        )
+                        error_msg = f"Error calling {tool_name}: {e}"
+                        console.print(f"   [red]→ {error_msg}[/red]")
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tool_id,
+                            "content": error_msg,
+                            "is_error": True,
+                        })
 
-                    progress.advance(task)
+                # Append tool results as user message
+                messages.append({"role": "user", "content": tool_results})
 
-            # Print results
+            # Print final summary panel
             console.print()
-            console.print(table)
-            console.print()
-
-            # Summary panel
             console.print(Panel(
-                f"[green]Found: {found_count}[/green] | "
-                f"[yellow]Not found: {not_found_count}[/yellow] | "
-                f"[red]Errors: {error_count}[/red]",
-                border_style="bright_cyan",
+                "[bold green]Analysis complete[/bold green] — see agent reasoning above for top 3 ad placements.",
+                title="[bold]Seamless Ad Placement Agent[/bold]",
+                border_style="bright_green",
             ))
