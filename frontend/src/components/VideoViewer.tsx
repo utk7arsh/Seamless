@@ -45,8 +45,8 @@ interface VideoViewerProps {
 const DEFAULT_AD_TIMING = 60;
 const DEFAULT_AD_DURATION_SEC = 10;
 const CART_HOTSPOT_PADDING = 24; // extra px around cart icon for hover-to-open sidebar (during ad)
-const GLOW_MARGIN_BEFORE_SEC = 3; // timeline glow starts this many seconds before ad slot
-const GLOW_MARGIN_AFTER_SEC = 5;  // timeline glow extends this many seconds after ad slot
+const GLOW_MARGIN_BEFORE_SEC = 3; // cart callout starts this many seconds before ad slot
+const GLOW_MARGIN_AFTER_SEC = 5;  // cart callout extends this many seconds after ad slot
 const SEEK_AMOUNT = 10;
 const CONTROLS_HIDE_DELAY = 3000;
 
@@ -91,7 +91,7 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
 
   const video = videoRef.current;
   const adSegments = getAdsForContent(contentId, userId);
-  const products = getProductsForContent(contentId);
+  const products = getProductsForContent(contentId, userId);
   const featuredProduct = products[0]; // Show only the first product
   const inAdSlot =
     !isPlayingAd &&
@@ -264,15 +264,10 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onTimeUpdate = () => {
-      const seg = currentAdSegmentRef.current;
-      if (seg) {
-        setCurrentTime(Math.min(seg.endTime, seg.startTime + v.currentTime));
-      } else {
-        setCurrentTime(v.currentTime);
-      }
-    };
+    const onTimeUpdate = () => setCurrentTime(v.currentTime);
     const onLoadedMetadata = () => {
+      setDuration(v.duration);
+      if (!isPlayingAd) mainDurationRef.current = v.duration;
       if (pendingResumeRef.current) {
         v.currentTime = mainResumeTimeRef.current;
         setCurrentTime(mainResumeTimeRef.current);
@@ -281,12 +276,6 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
         v.play().catch(() => {});
         setIsPlaying(true);
         setVideoReady(true);
-      } else if (currentAdSegmentRef.current) {
-        setDuration(mainDurationRef.current);
-        setCurrentTime(currentAdSegmentRef.current.startTime);
-      } else {
-        setDuration(v.duration);
-        mainDurationRef.current = v.duration;
       }
     };
     const onCanPlay = () => setVideoReady(true);
@@ -534,43 +523,29 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
             style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
             aria-hidden
           />
-          {/* Glowing segments: margin 3s before + 5s after each ad slot; overlapping ranges merged */}
+          {/* Ad segment markers on timeline */}
           {!isPlayingAd &&
             duration > 0 &&
-            (() => {
-              const glowColor = "#f59e0b";
-              const ranges: { start: number; end: number }[] = adSegments
-                .filter((seg) => seg.endTime <= duration)
-                .map((seg) => ({
-                  start: Math.max(0, seg.startTime - GLOW_MARGIN_BEFORE_SEC),
-                  end: Math.min(duration, seg.endTime + GLOW_MARGIN_AFTER_SEC),
-                }))
-                .sort((a, b) => a.start - b.start);
-              const merged: { start: number; end: number }[] = [];
-              for (const r of ranges) {
-                const last = merged[merged.length - 1];
-                if (last && r.start <= last.end) {
-                  last.end = Math.max(last.end, r.end);
-                } else {
-                  merged.push({ start: r.start, end: r.end });
-                }
-              }
-              return merged.map((r, i) => (
+            adSegments.map((seg) => {
+              if (seg.endTime > duration) return null;
+              const left = (seg.startTime / duration) * 100;
+              const width = ((seg.endTime - seg.startTime) / duration) * 100;
+              return (
                 <div
-                  key={`${r.start}-${r.end}-${i}`}
+                  key={`${seg.startTime}-${seg.endTime}`}
                   className="absolute h-1.5 rounded-md pointer-events-none"
                   style={{
-                    left: `${(r.start / duration) * 100}%`,
-                    width: `${((r.end - r.start) / duration) * 100}%`,
-                    backgroundColor: glowColor,
-                    boxShadow: `0 0 12px ${glowColor}80`,
-                    border: `1px solid ${glowColor}cc`,
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    backgroundColor: seg.color ?? "#f59e0b",
+                    boxShadow: `0 0 8px ${seg.color ?? "#f59e0b"}80`,
+                    border: `1px solid ${seg.color ?? "#f59e0b"}cc`,
                   }}
                   aria-hidden
-                  title="Ad callout"
+                  title="Ad segment"
                 />
-              ));
-            })()}
+              );
+            })}
           <input
             type="range"
             min={0}

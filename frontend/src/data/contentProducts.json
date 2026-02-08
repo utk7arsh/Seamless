@@ -1,5 +1,6 @@
 [
   {
+    "userId": 1,
     "contentId": "1",
     "products": [
       {
@@ -17,6 +18,25 @@
     ]
   },
   {
+    "userId": 2,
+    "contentId": "1",
+    "products": [
+      {
+        "product": "Sparkling Ice Black Raspberry",
+        "link": "https://www.kroger.com/p/sparkling-ice-black-raspberry/0016571220345",
+        "price": 4.99,
+        "description": "Zero sugar sparkling water with natural flavors. 17 fl oz bottles. Refreshing and guilt-free."
+      },
+      {
+        "product": "Sparkling Ice Grape Raspberry",
+        "link": "https://www.kroger.com/p/sparkling-ice-grape-raspberry/0016571220352",
+        "price": 4.99,
+        "description": "Premium sparkling water with vitamins and antioxidants. Zero sugar, bold flavor."
+      }
+    ]
+  },
+  {
+    "userId": 1,
     "contentId": "2",
     "products": [
       {
@@ -30,6 +50,24 @@
         "link": "https://www.kroger.com/p/kilng-pizza-supreme/0001234567891",
         "price": 14.99,
         "description": "Loaded with pepperoni, sausage, bell peppers, onions, and olives. Stone-fired crispy crust."
+      }
+    ]
+  },
+  {
+    "userId": 2,
+    "contentId": "2",
+    "products": [
+      {
+        "product": "Simple Truth Organic Protein Snack Pack",
+        "link": "https://www.kroger.com/p/simple-truth-organic-protein-pack/0001234567892",
+        "price": 8.99,
+        "description": "Almonds, cashews, and dried cranberries. High-protein snack with clean ingredients. Perfect for mindful snacking."
+      },
+      {
+        "product": "Simple Truth Plant-Based Protein Bars",
+        "link": "https://www.kroger.com/p/simple-truth-protein-bars/0001234567893",
+        "price": 9.99,
+        "description": "12g plant-based protein, no artificial ingredients. Box of 5 bars. Fuel your balanced lifestyle."
       }
     ]
   }

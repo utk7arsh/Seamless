@@ -9,6 +9,9 @@
       content="Seamless turns streaming scenes into shoppable moments with precision scene understanding, product graphs, and personalization."
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -75,207 +78,254 @@
                 </div>
               </div>
             </div>
-            <div class="signal-grid">
-              <div class="signal">
-                <p>Scene understanding</p>
-                <span></span>
-              </div>
-              <div class="signal">
-                <p>Product graph</p>
-                <span></span>
-              </div>
-              <div class="signal">
-                <p>Personalization</p>
-                <span></span>
-              </div>
+
+            <div class="metric-item">
+              <div class="metric-number" data-target="99" data-suffix="%">0%</div>
+              <p class="metric-label">Viewer Satisfaction</p>
+              <p class="metric-description">Non-disruptive ad experience</p>
             </div>
-            <div class="flow" aria-label="Seamless flow animation">
-              <div class="flow-step">
-                <span class="dot"></span>
-                <p>Detect</p>
-              </div>
-              <div class="flow-line"></div>
-              <div class="flow-step">
-                <span class="dot"></span>
-                <p>Match</p>
-              </div>
-              <div class="flow-line"></div>
-              <div class="flow-step">
-                <span class="dot"></span>
-                <p>Place</p>
-              </div>
+
+            <div class="metric-item">
+              <div class="metric-number" data-target="2.8" data-suffix="s">0s</div>
+              <p class="metric-label">Avg. Engagement</p>
+              <p class="metric-description">Seconds per ad interaction</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="what" class="section">
-        <div class="container two-col">
-          <div>
-            <h2>What we do</h2>
-            <p>
-              We turn movies into shoppable moments without breaking the story.
-              Seamless analyzes every scene, maps products to transcripts, and
-              lets viewers grab the exact item they saw, instantly.
-            </p>
-            <div class="highlights">
-              <div>
-                <p class="highlight-title">Preprocessed scene index</p>
-                <p>
-                  We index scenes and product-transcript links with VideoDB and
-                  an LLM layer ahead of time.
-                </p>
-              </div>
-              <div>
-                <p class="highlight-title">On-frame brand overlay</p>
-                <p>
-                  Ads are branded directly on the product using Kling for
-                  photoreal overlays.
-                </p>
-              </div>
-              <div>
-                <p class="highlight-title">Instant sidebar checkout</p>
-                <p>
-                  Viewers can buy now or save for later without pausing the
-                  movie.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="feature-card">
-            <p class="eyebrow">Seamless Engine</p>
-            <h3>From scene to shelf in seconds.</h3>
-            <p>
-              A multimodal pipeline turns scenes into a searchable graph, then
-              orchestrates the right product moment at the right time.
-            </p>
-            <div class="feature-grid">
-              <span>VideoDB</span>
-              <span>LLM layer</span>
-              <span>Scene graph</span>
-              <span>Transcript map</span>
-              <span>Kling overlay</span>
-              <span>Checkout</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="how" class="section dark-panel">
+      <!-- Features Section -->
+      <section class="features-section">
         <div class="container">
-          <div class="section-header">
-            <h2>How we do it</h2>
-            <p>
-              A three-step system that keeps every ad moment authentic.
-            </p>
-          </div>
-          <div class="steps">
-            <div class="step">
-              <p class="step-number">01</p>
-              <h3>Understand the scene</h3>
-              <p>
-                Preprocessing builds a scene index from `videodb.ipynb`,
-                aligning transcripts to product moments.
+          <h2 class="section-heading">What We Built</h2>
+          <p class="section-description">
+            Turn movies into shoppable moments without breaking the story. Seamless analyzes every scene and delivers precision placements.
+          </p>
+          
+          <div class="cards-grid">
+            <div class="card">
+              <div class="card-icon">🎬</div>
+              <h3 class="card-title">Scene Understanding</h3>
+              <p class="card-text">
+                Index scenes and product-transcript links with VideoDB and an LLM layer, processing content ahead of time.
               </p>
             </div>
-            <div class="step">
-              <p class="step-number">02</p>
-              <h3>Invoke the MCP stack</h3>
-              <p>
-                When playback starts, Dedalus Labs MCP calls our shopping
-                toolkit to find nearby inventory.
+
+            <div class="card">
+              <div class="card-icon">✨</div>
+              <h3 class="card-title">Brand Overlay</h3>
+              <p class="card-text">
+                Branded directly on products using Kling for photoreal overlays that feel native to the scene.
               </p>
             </div>
-            <div class="step">
-              <p class="step-number">03</p>
-              <h3>Overlay + checkout</h3>
-              <p>
-                We apply the Kling brand overlay, then surface the product in
-                the sidebar for instant checkout or save.
+
+            <div class="card">
+              <div class="card-icon">🛒</div>
+              <h3 class="card-title">Instant Checkout</h3>
+              <p class="card-text">
+                Viewers buy now or save for later without pausing, with sidebar integration powered by Flowglad.
+              </p>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">🎯</div>
+              <h3 class="card-title">Product Matching</h3>
+              <p class="card-text">
+                Multimodal pipeline maps scenes to products, orchestrating the right moment at the right time.
+              </p>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">📊</div>
+              <h3 class="card-title">Scene Graph</h3>
+              <p class="card-text">
+                Transform content into searchable graphs with transcript mapping and metadata enrichment.
+              </p>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">⚡</div>
+              <h3 class="card-title">Real-Time Delivery</h3>
+              <p class="card-text">
+                MCP orchestration calls shopping toolkit to find inventory and display products seamlessly.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="why" class="section">
+      <!-- Process Section -->
+      <section class="process-section">
         <div class="container">
-          <div class="section-header">
-            <h2>Why we do it</h2>
-            <p>
-              Advertising should respect the story and the viewer. Seamless
-              protects the viewing experience while unlocking new revenue.
-            </p>
-          </div>
-          <div class="why-grid">
-            <div class="why-card">
-              <h3>For viewers</h3>
-              <p>
-                No forced breaks. Ads that enhance the scene, not derail it.
+          <h2 class="section-heading">How It Works</h2>
+          <p class="section-description">
+            A three-step system that keeps every ad moment authentic and seamlessly integrated.
+          </p>
+          
+          <div class="process-cards">
+            <div class="process-card">
+              <div class="process-number">01</div>
+              <h3 class="process-title">Understand the Scene</h3>
+              <p class="process-text">
+                Preprocessing builds a scene index from VideoDB, aligning transcripts to product moments with precision timing.
               </p>
             </div>
-            <div class="why-card">
-              <h3>For creators</h3>
-              <p>
-                Monetize without sacrificing tone, pacing, or authenticity.
+
+            <div class="process-card">
+              <div class="process-number">02</div>
+              <h3 class="process-title">Invoke MCP Stack</h3>
+              <p class="process-text">
+                When playback starts, Dedalus Labs MCP calls our shopping toolkit to find nearby inventory in real-time.
               </p>
             </div>
-            <div class="why-card">
-              <h3>For brands</h3>
-              <p>
-                Premium attention in moments of real intent and relevance.
+
+            <div class="process-card">
+              <div class="process-number">03</div>
+              <h3 class="process-title">Overlay & Checkout</h3>
+              <p class="process-text">
+                Apply Kling brand overlay, then surface the product in the sidebar for instant checkout or save.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="demo" class="section demo">
-        <div class="container demo-grid">
-          <div>
-            <h2>Built for Devfest Columbia University 2026.</h2>
-            <p>
-              A focused demo that shows scene indexing, MCP orchestration, and
-              instant shoppable outcomes inside the viewing experience.
-            </p>
-            <ul class="demo-list">
-              <li>Scene-level metadata pipeline</li>
-              <li>Retail catalog integration</li>
-              <li>Timing and context scoring</li>
-              <li>Viewer-first interaction design</li>
-            </ul>
+      <!-- Why Section -->
+      <section class="why-section">
+        <div class="container">
+          <h2 class="section-heading">Why Seamless</h2>
+          <p class="section-description">
+            Advertising should respect the story and the viewer. Seamless protects the viewing experience while unlocking new revenue.
+          </p>
+          
+          <div class="why-cards">
+            <div class="why-card-large">
+              <h3 class="why-title">For Viewers</h3>
+              <p class="why-text">
+                No forced breaks. Ads that enhance the scene, not derail it. Shop products naturally without leaving the story.
+              </p>
+            </div>
+
+            <div class="why-card-large">
+              <h3 class="why-title">For Creators</h3>
+              <p class="why-text">
+                Monetize without sacrificing tone, pacing, or authenticity. Keep your artistic vision intact.
+              </p>
+            </div>
+
+            <div class="why-card-large">
+              <h3 class="why-title">For Brands</h3>
+              <p class="why-text">
+                Premium attention in moments of real intent and relevance. Reach viewers when it matters most.
+              </p>
+            </div>
           </div>
-          <div class="demo-cta">
-            <p class="eyebrow">Ready to see it live?</p>
-            <h3>Let Seamless orchestrate your next ad moment.</h3>
-            <button class="solid">Launch Demo</button>
+        </div>
+      </section>
+
+      <!-- Tech Stack Section -->
+      <section class="tech-section">
+        <div class="container">
+          <h2 class="section-heading">Built For DevFest Columbia 2026</h2>
+          <p class="section-description">
+            A focused demo showcasing scene indexing, MCP orchestration, and instant shoppable outcomes.
+          </p>
+          
+          <div class="tech-grid">
+            <div class="tech-card">
+              <div class="tech-icon">📹</div>
+              <p class="tech-name">VideoDB</p>
+            </div>
+            <div class="tech-card">
+              <div class="tech-icon">🤖</div>
+              <p class="tech-name">Dedalus MCP</p>
+            </div>
+            <div class="tech-card">
+              <div class="tech-icon">✨</div>
+              <p class="tech-name">Kling AI</p>
+            </div>
+            <div class="tech-card">
+              <div class="tech-icon">💳</div>
+              <p class="tech-name">Flowglad</p>
+            </div>
+            <div class="tech-card">
+              <div class="tech-icon">🛍️</div>
+              <p class="tech-name">Kroger API</p>
+            </div>
+            <div class="tech-card">
+              <div class="tech-icon">⚛️</div>
+              <p class="tech-name">React + Vite</p>
+            </div>
           </div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="container footer-grid">
-        <div>
-          <div class="brand">
-            <span class="brand-mark"></span>
-            <span class="brand-name">Seamless</span>
-          </div>
-          <p>
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <h3 class="footer-logo">Seamless</h3>
+          <p class="footer-tagline">
             Scene-aware advertising for streaming and immersive media.
           </p>
         </div>
-        <div class="footer-links">
-          <a href="#what">What</a>
-          <a href="#how">How</a>
-          <a href="#why">Why</a>
-          <a href="#demo">Demo</a>
-        </div>
-        <div class="footer-note">
-          <p>Devfest Columbia University 2026.</p>
-          <p>Made by Utkarsh, Aman, Om, and John with &lt;3.</p>
+        <div class="footer-info">
+          <p class="footer-credit">DevFest Columbia University 2026</p>
+          <p class="footer-team">Made with ❤️ by Utkarsh, Aman, Om, and John</p>
         </div>
       </div>
     </footer>
+
+    <script>
+      // Animated counter for metrics
+      function animateCounter(element, target, duration = 2000) {
+        const isDecimal = target.toString().includes('.');
+        const decimals = isDecimal ? target.toString().split('.')[1].length : 0;
+        const suffix = element.getAttribute('data-suffix') || '';
+        const increment = target / (duration / 16);
+        let current = 0;
+
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          const displayValue = isDecimal ? current.toFixed(decimals) : Math.floor(current);
+          element.textContent = displayValue + suffix;
+        }, 16);
+      }
+
+      // Intersection Observer for scroll-triggered animations
+      const observerOptions = {
+        threshold: 0.3,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            
+            // Trigger counter animation for metrics
+            const metricNumber = entry.target.querySelector('.metric-number');
+            if (metricNumber && !metricNumber.classList.contains('animated')) {
+              metricNumber.classList.add('animated');
+              const target = parseFloat(metricNumber.getAttribute('data-target'));
+              animateCounter(metricNumber, target);
+            }
+            
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe all metric items
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.metric-item').forEach(item => {
+          observer.observe(item);
+        });
+      });
+    </script>
   </body>
 </html>

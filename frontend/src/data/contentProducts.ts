@@ -10,6 +10,8 @@ export interface ProductItem {
 }
 
 export interface ContentProductsEntry {
+  /** User id (matches AppUser.id from content.ts). */
+  userId: number;
   contentId: string;
   products: ProductItem[];
 }
@@ -17,14 +19,15 @@ export interface ContentProductsEntry {
 import productsJson from "./contentProducts.json";
 
 const entries = productsJson as ContentProductsEntry[];
-const productsByContent = new Map<string, ProductItem[]>(
-  entries.map((e) => [e.contentId, e.products])
+const productsByUserAndContent = new Map<string, ProductItem[]>(
+  entries.map((e) => [`${e.userId}-${e.contentId}`, e.products])
 );
 
 /**
- * Returns products for the given content (e.g. pizza for Breaking Bad, Pepsi for Stranger Things).
- * Returns an empty array if none are defined.
+ * Returns products for the given content and user. Different users get different products
+ * for the same content (user-based product targeting). Returns an empty array if none are defined.
  */
-export function getProductsForContent(contentId: string): ProductItem[] {
-  return productsByContent.get(contentId) ?? [];
+export function getProductsForContent(contentId: string, userId: number): ProductItem[] {
+  const key = `${userId}-${contentId}`;
+  return productsByUserAndContent.get(key) ?? [];
 }

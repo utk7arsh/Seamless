@@ -4,16 +4,10 @@
     "contentId": "1",
     "ads": [
       {
-        "storagePath": "/video/STS3E4_14_34_14_40_1.mp4",
-        "startTime": 874,
-        "endTime": 880,
-        "color": "#f59e0b"
-      },
-      {
-        "storagePath": "/video/STS3E4_14_45_14_52_1.mp4",
+        "storagePath": "/video/elevenPepsi.mp4",
         "startTime": 885.5,
         "endTime": 892,
-        "color": "#22c55e"
+        "color": "#f59e0b"
       }
     ]
   },
@@ -22,16 +16,10 @@
     "contentId": "1",
     "ads": [
       {
-        "storagePath": "/video/STS3E4_14_34_14_40_2.mp4",
-        "startTime": 874,
-        "endTime": 880,
-        "color": "#f59e0b"
-      },
-      {
-        "storagePath": "/video/STS3E4_14_45_14_52_2.mp4",
+        "storagePath": "/video/elevenPepsi.mp4",
         "startTime": 885.5,
         "endTime": 892,
-        "color": "#22c55e"
+        "color": "#3b82f6"
       }
     ]
   },
@@ -40,16 +28,10 @@
     "contentId": "2",
     "ads": [
       {
-        "storagePath": "/video/BBS3E2_35_10_35_19_1.mp4",
-        "startTime": 2110,
-        "endTime": 2119,
+        "storagePath": "/video/kilng_pizza_gen.mp4",
+        "startTime": 2129,
+        "endTime": 2134,
         "color": "#f59e0b"
-      },
-      {
-        "storagePath": "/video/BBS3E2_35_30_35_36_1.mp4",
-        "startTime": 2130,
-        "endTime": 2136,
-        "color": "#22c55e"
       }
     ]
   },
@@ -58,15 +40,9 @@
     "contentId": "2",
     "ads": [
       {
-        "storagePath": "/video/BBS3E2_35_10_35_19_1.mp4",
-        "startTime": 2110,
-        "endTime": 2119,
-        "color": "#f59e0b"
-      },
-      {
-        "storagePath": "/video/BBS3E2_35_30_35_36_2.mp4",
-        "startTime": 2130,
-        "endTime": 2136,
+        "storagePath": "/video/kilng_pizza_gen.mp4",
+        "startTime": 2129,
+        "endTime": 2134,
         "color": "#3b82f6"
       }
     ]
