@@ -17,6 +17,10 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api\/flowglad/, "/api/v1"),
       },
+      "/api/discover": {
+        target: "http://localhost:8001",
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

@@ -323,6 +323,15 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
     };
   }, [inAdSlot, currentSegment, mainVideoSrc, duration]);
 
+  // Fire-and-forget: trigger MCP product discovery on the backend
+  useEffect(() => {
+    fetch("/api/discover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content_id: contentId }),
+    }).catch((err) => console.debug("Product discovery unavailable:", err));
+  }, [contentId]);
+
   // CLEANUP
   useEffect(() => {
     return () => {
