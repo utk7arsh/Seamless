@@ -19,7 +19,7 @@ interface VideoViewerProps {
 // Netflix glowing bar: red strip on the RIGHT edge of the video viewer.
 // To find it in this file, search for: "glowing bar" or "right-0" or "z-[95]".
 
-const RIGHT_EDGE_HOVER_PERCENT = 10; // sidebar opens when cursor within this % of viewport width from right edge (during ad)
+const RIGHT_EDGE_HOVER_PERCENT = 20; // sidebar opens when cursor within this % of viewport width from right edge (during ad)
 const SEEK_AMOUNT = 10;
 const CONTROLS_HIDE_DELAY = 3000;
 
