@@ -12,8 +12,8 @@ import thumbAdventure from "@/assets/thumb-adventure.jpg";
 import thumbStrangerThings from "@/assets/hero-stranger-things.png";
 import thumbSquidGame from "@/assets/thumb-squid-game.jpg";
 
-import videoBreakingBad from "@/assets/video/breaking_bad_with_edit.mp4";
 import videoStrangerThings from "@/assets/video/STS3E4.mp4";
+import videoBreakingBad from "@/assets/video/BBS3E2.mp4";
 
 export interface ContentItem {
   id: string;

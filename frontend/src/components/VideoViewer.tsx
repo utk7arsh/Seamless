@@ -1,26 +1,28 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Play, Pause, RotateCcw, RotateCw, ShoppingCart, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { allContent } from "@/data/content";
 import { getAdsForContent, type AdSegment } from "@/data/contentAdSegments";
 import { getProductsForContent } from "@/data/contentProducts";
-import adVideoKilngPizza from "@/assets/video/kilng_pizza_gen.mp4";
-import adVideoElevenPepsi from "@/assets/video/elevenPepsi.mp4";
 import videoStrangerThings from "@/assets/video/STS3E4.mp4";
+import videoBreakingBad from "@/assets/video/BBS3E2.mp4";
+import adVideoElevenPepsi from "@/assets/video/elevenPepsi.mp4";
+import adVideoKilngPizza from "@/assets/video/kilng_pizza_gen.mp4";
 
-/** Resolve ad segment storagePath to a playable URL. Paths under /video/ that exist in assets use the imported asset URL so they play. */
+/** Resolve ad segment storagePath to a playable URL. Videos are imported from assets. */
 function resolveAdVideoUrl(storagePath: string): string {
   const lower = storagePath.toLowerCase().replace(/\\/g, "/");
-  if (lower.endsWith("kilng_pizza_gen.mp4")) return adVideoKilngPizza;
   if (lower.endsWith("elevenpepsi.mp4")) return adVideoElevenPepsi;
+  if (lower.endsWith("kilng_pizza_gen.mp4")) return adVideoKilngPizza;
   return storagePath;
 }
 
-/** Video folder is symlinked at frontend/public/video → repo /video (breaking_bad.mp4, BBS3E2.mp4, kilng_pizza_gen.mp4). */
+/** Videos are imported from src/assets/video/. */
 function getVideoSrc(contentId: string): string {
-  if (contentId === "1") return videoStrangerThings;   // Stranger Things S3 E4 (imported from assets)
-  if (contentId === "2") return "/video/BBS3E2.mp4";
-  return "/video/breaking_bad.mp4";
+  if (contentId === "1") return videoStrangerThings;   // Stranger Things S3 E4
+  if (contentId === "2") return videoBreakingBad;      // Breaking Bad S3 E2
+  return videoBreakingBad;
 }
 
 interface VideoViewerProps {
@@ -64,6 +66,8 @@ const VideoViewer = ({ contentId, userId, onClose }: VideoViewerProps) => {
   const [showControls, setShowControls] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cartGlow, setCartGlow] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   /** True until the video can start playing (lighter: we don't buffer the whole file upfront). */
   const [videoReady, setVideoReady] = useState(false);
   /** When true, the video element is playing an ad from contentAdSegments; we cut back at ad end. */

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
@@ -63,9 +63,16 @@ const Index = () => {
     setVideoId(null);
   };
 
+  // If no user is selected and switcher isn't open, open it
+  useEffect(() => {
+    if (currentUser === null && !isUserSwitcherOpen) {
+      setIsUserSwitcherOpen(true);
+    }
+  }, [currentUser, isUserSwitcherOpen]);
+
   return (
     <div className="min-h-screen bg-background">
-      <Navbar currentUser={activeUserId} onOpenProfiles={() => setIsUserSwitcherOpen(true)} />
+      {currentUser && <Navbar currentUser={currentUser} onOpenProfiles={() => setIsUserSwitcherOpen(true)} />}
       <HeroBanner onPlay={openVideo} />
 
       <div className="-mt-24 relative z-10">
@@ -74,8 +81,9 @@ const Index = () => {
         ))}
       </div>
 
-      {videoId && <VideoViewer contentId={videoId} onClose={closeVideo} resumeTime={resumeTime} />}
+      {videoId && currentUser && <VideoViewer contentId={videoId} userId={currentUser} onClose={closeVideo} resumeTime={resumeTime} />}
       {showUserToast && <UserSwitchToast currentUser={currentUser} />}
+      <UserSwitcher currentUserId={currentUser} isOpen={isUserSwitcherOpen} onSelect={selectUser} onClose={() => setIsUserSwitcherOpen(false)} />
     </div>
   );
 };
