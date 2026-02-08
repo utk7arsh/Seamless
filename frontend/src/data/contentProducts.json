@@ -4,16 +4,16 @@
     "contentId": "1",
     "products": [
       {
-        "product": "Pepsi-Cola 12 Pack Cans",
-        "link": "https://www.kroger.com/p/pepsi-cola-soda-pop/0001200080994",
-        "price": 6.99,
-        "description": "12 fl oz cans. The bold, refreshing taste of Pepsi. Perfect for late-night binge sessions with your favorite show."
+        "product": "Coca-Cola® Soda Mini Cans",
+        "link": "https://www.kroger.com/p/coca-cola-soda-mini-cans/0004900006721",
+        "price": 5.49,
+        "description": "12 fl oz cans. The bold, refreshing taste of Coca-Cola. Perfect for late-night binge sessions with your favorite show."
       },
       {
-        "product": "Pepsi Zero Sugar 12 Pack",
-        "link": "https://www.kroger.com/p/pepsi-zero-sugar/0004300002131",
+        "product": "Diet Coke Soda Mini Cans",
+        "link": "https://www.kroger.com/p/diet-coke-soda-mini-cans/0004900006722",
         "price": 6.49,
-        "description": "Same great Pepsi taste, zero sugar. 12 fl oz cans. Stay refreshed without the guilt."
+        "description": "Same great Coke taste, zero sugar. 12 fl oz cans. Stay refreshed without the guilt."
       }
     ]
   },
@@ -22,16 +22,16 @@
     "contentId": "1",
     "products": [
       {
-        "product": "Sparkling Ice Black Raspberry",
-        "link": "https://www.kroger.com/p/sparkling-ice-black-raspberry/0016571220345",
+        "product": "Pepsi Diet Soda Cola 12 Fl Oz, 12 Count",
+        "link": "https://www.kroger.com/p/pepsi-diet-soda-cola-12-fl-oz-12-count/0001200017186",
         "price": 4.99,
-        "description": "Zero sugar sparkling water with natural flavors. 17 fl oz bottles. Refreshing and guilt-free."
+        "description": "Diet cola with zero sugar. 12 fl oz cans. Perfect for late-night binge sessions with your favorite show."
       },
       {
-        "product": "Sparkling Ice Grape Raspberry",
-        "link": "https://www.kroger.com/p/sparkling-ice-grape-raspberry/0016571220352",
+        "product": "Pepsi Cola Soda Pop",
+        "link": "https://www.kroger.com/p/pepsi-cola-soda-pop/0001200080994?fulfillment=PICKUP&searchType=default_search",
         "price": 4.99,
-        "description": "Premium sparkling water with vitamins and antioxidants. Zero sugar, bold flavor."
+        "description": "The bold, refreshing taste of Pepsi. Perfect for late-night binge sessions with your favorite show."
       }
     ]
   },
@@ -58,16 +58,16 @@
     "contentId": "2",
     "products": [
       {
-        "product": "Simple Truth Organic Protein Snack Pack",
-        "link": "https://www.kroger.com/p/simple-truth-organic-protein-pack/0001234567892",
+        "product": "Pepperoni Pizza",
+        "link": "https://www.doordash.com/store/domino's-clifton-beach-34233763/73754392/?itemId=27350283576",
         "price": 8.99,
-        "description": "Almonds, cashews, and dried cranberries. High-protein snack with clean ingredients. Perfect for mindful snacking."
+        "description": "Pepperoni pizza with cheese and sauce. Perfect for late-night binge sessions with your favorite show."
       },
       {
-        "product": "Simple Truth Plant-Based Protein Bars",
-        "link": "https://www.kroger.com/p/simple-truth-protein-bars/0001234567893",
+        "product": "Supreme Pizza",
+        "link": "https://www.doordash.com/store/domino's-clifton-beach-34233763/73754392/?itemId=27350283576",
         "price": 9.99,
-        "description": "12g plant-based protein, no artificial ingredients. Box of 5 bars. Fuel your balanced lifestyle."
+        "description": "Supreme pizza with cheese and sauce. Cheesy and delicious. Perfect for late-night binge sessions with your favorite show."
       }
     ]
   }
