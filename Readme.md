@@ -1,5 +1,5 @@
-# Seamless
-*Have a seamless experience with scene-aware Ads in streaming services!* Submission to Devfest 2026 at Columbia University
+# Seamless (🏆 Overall first Winner at Devfest 2026 at Columbia University)
+*Have a seamless experience with scene-aware Ads in streaming services!*
 
 ## Project
 Seamless is an in-movie ad recommendation platform that turns streaming scenes into shoppable moments. It analyzes scenes, matches products to the right moment, and delivers non-disruptive overlays that feel native to the story.
